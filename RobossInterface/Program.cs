@@ -20,7 +20,7 @@ namespace RobossInterface {
                 log.Fatal(String.Format("Invalid arguments passed: [{0}]", 
                     string.Join(", ", args.Select(v => v.ToString()))));
 
-                return;
+                Environment.Exit(1);
             }
 
             string hostname = args[0];
