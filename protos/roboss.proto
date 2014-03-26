@@ -1,0 +1,26 @@
+message RobotState {
+	required double x		= 1;
+	required double y		= 2;
+	required double theta		= 3;
+	required int64 timestamp	= 4;
+}
+
+message RobossRequest {
+	enum Type { 
+		WHEELS_CMD = 0;
+		STATE_REQUEST = 1;
+		START = 2;
+		STOP = 3;
+		RESET = 4;
+	}
+
+	required Type type = 1;
+	optional WheelsCommand wheelsCmd = 2;
+}
+
+message WheelsCommand {
+	required double frontLeft	= 1;
+	required double frontRight	= 2;
+	required double rearLeft	= 3;
+	required double rearRight	= 4;
+}
