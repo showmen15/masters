@@ -1,0 +1,12 @@
+{application, roboss,
+ [
+  {description, "Erlang interface to RoBOSS"},
+  {vsn, "0.0.1"},
+  {registered, [roboss_driver]},
+  {applications, [
+                  kernel,
+                  stdlib
+                 ]},
+  {mod, { roboss_app, []}, roboss_driver},
+  {env, []}
+ ]}.
