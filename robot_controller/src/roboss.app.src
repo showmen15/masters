@@ -7,6 +7,6 @@
                   kernel,
                   stdlib
                  ]},
-  {mod, { roboss_app, []}, roboss_driver},
+  {mod, { roboss_app, {"192.168.93.131", "4468"}}},
   {env, []}
  ]}.

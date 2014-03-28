@@ -4,7 +4,7 @@
 -include("include/records.hrl").
 -include("include/roboss_pb.hrl").
 
--export([start_link/3, exit/1]).
+-export([start_link/3, stop/1]).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 -export([send_wheels_cmd/2, request_state/1, request_robots_list/1, start_simulation/1, stop_simulation/1, reset_simulation/1]).
 
@@ -20,8 +20,8 @@
 start_link(Hostname, Port, RobotName) -> 
 	gen_server:start_link(?MODULE, {Hostname, Port, RobotName}, []).
 
-exit(Pid) -> 
-	gen_server:call(Pid, terminate).
+stop(Pid) -> 
+	gen_server:call(Pid, stop).
 
 send_wheels_cmd(Pid, WheelsCmd) ->
 	gen_server:cast(Pid, {wheels_cmd, WheelsCmd}).
@@ -99,7 +99,7 @@ handle_call(request_robots_list, _From, State) ->
 
 	end;
 
-handle_call(terminate, _From, State) ->
+handle_call(stop, _From, State) ->
 	{stop, normal, ok, State}.
 
 
@@ -151,7 +151,7 @@ handle_info({'EXIT', Port, Reason}, #state{port = Port} = State) ->
     {stop, {port_terminated, Reason}, State};
 
 handle_info(Info, State) ->
-	io:format("~w ~n", [Info]),
+	io:format("info: ~w ~n", [Info]),
 	{noreply, State}.
 
 terminate(_Reason, _State) ->
