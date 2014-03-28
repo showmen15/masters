@@ -76,20 +76,20 @@ namespace roboss
       [global::ProtoBuf.ProtoEnum(Name=@"WHEELS_CMD", Value=0)]
       WHEELS_CMD = 0,
             
-      [global::ProtoBuf.ProtoEnum(Name=@"STATE_REQUEST", Value=1)]
-      STATE_REQUEST = 1,
+      [global::ProtoBuf.ProtoEnum(Name=@"ROBOTS_LIST_REQUEST", Value=1)]
+      ROBOTS_LIST_REQUEST = 1,
             
-      [global::ProtoBuf.ProtoEnum(Name=@"START", Value=2)]
-      START = 2,
+      [global::ProtoBuf.ProtoEnum(Name=@"STATE_REQUEST", Value=2)]
+      STATE_REQUEST = 2,
             
-      [global::ProtoBuf.ProtoEnum(Name=@"STOP", Value=3)]
-      STOP = 3,
+      [global::ProtoBuf.ProtoEnum(Name=@"START", Value=3)]
+      START = 3,
             
-      [global::ProtoBuf.ProtoEnum(Name=@"RESET", Value=4)]
-      RESET = 4,
+      [global::ProtoBuf.ProtoEnum(Name=@"STOP", Value=4)]
+      STOP = 4,
             
-      [global::ProtoBuf.ProtoEnum(Name=@"ROBOTS_LIST_REQUEST", Value=5)]
-      ROBOTS_LIST_REQUEST = 5
+      [global::ProtoBuf.ProtoEnum(Name=@"RESET", Value=5)]
+      RESET = 5
     }
   
     private global::ProtoBuf.IExtension extensionObject;
@@ -147,6 +147,16 @@ namespace roboss
       get { return _robotNames; }
     }
   
+    private global::ProtoBuf.IExtension extensionObject;
+    global::ProtoBuf.IExtension global::ProtoBuf.IExtensible.GetExtensionObject(bool createIfMissing)
+      { return global::ProtoBuf.Extensible.GetExtensionObject(ref extensionObject, createIfMissing); }
+  }
+  
+  [global::System.Serializable, global::ProtoBuf.ProtoContract(Name=@"Ack")]
+  public partial class Ack : global::ProtoBuf.IExtensible
+  {
+    public Ack() {}
+    
     private global::ProtoBuf.IExtension extensionObject;
     global::ProtoBuf.IExtension global::ProtoBuf.IExtensible.GetExtensionObject(bool createIfMissing)
       { return global::ProtoBuf.Extensible.GetExtensionObject(ref extensionObject, createIfMissing); }

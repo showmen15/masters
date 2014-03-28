@@ -8,11 +8,11 @@ message RobotState {
 message RobossRequest {
 	enum Type { 
 		WHEELS_CMD = 0;
-		STATE_REQUEST = 1;
-		START = 2;
-		STOP = 3;
-		RESET = 4;
-		ROBOTS_LIST_REQUEST = 5;
+		ROBOTS_LIST_REQUEST = 1;
+		STATE_REQUEST = 2;
+		START = 3;
+		STOP = 4;
+		RESET = 5;
 	}
 
 	required Type type = 1;
@@ -29,3 +29,5 @@ message WheelsCommand {
 message RobotsList {
 	repeated string robotNames = 1;
 }
+
+message Ack {}

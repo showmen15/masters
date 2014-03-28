@@ -43,6 +43,8 @@ namespace RobossInterface {
                 Environment.Exit(1);
             }
             log.Info("Connected to RoBOSS Controller.");
+
+            SendAck();
         }
 
         public void RequestRobot() {
@@ -138,6 +140,14 @@ namespace RobossInterface {
             }
         }
 
+        private void SendAck() {
+            if (log.IsDebugEnabled) {
+                log.Debug("Sending ACK message");
+            }
+
+            SendMessage(new Ack());
+        }
+
         private void HandleWheelsCmd(WheelsCommand wheelsCmd) {
             if (log.IsDebugEnabled) {
                 log.Debug(String.Format("Got WheelsCommand, fl: {0}, fr: {1}, rl: {2}, rr: {3}", 
@@ -186,16 +196,7 @@ namespace RobossInterface {
                     robotState.x, robotState.y, robotState.theta, robotState.timestamp));
             }
 
-            try {
-                using (var memoryStream = new MemoryStream()) {
-                    Serializer.Serialize(memoryStream, robotState);
-                    erlComm.WriteCmd(memoryStream.ToArray(), (int)memoryStream.Position);
-                }
-            }
-            catch (ProtoException e) {
-                log.Error("Protobuf exception occured: " + e);
-                return;
-            }
+            SendMessage(robotState);
         }
 
         private void HandleRobotsListRequest() {
@@ -217,16 +218,7 @@ namespace RobossInterface {
                 log.Debug(String.Format("Sending RobotsList: {0}", string.Join(",", robotsList.robotNames)));
             }
 
-            try {
-                using (var memoryStream = new MemoryStream()) {
-                    Serializer.Serialize(memoryStream, robotsList);
-                    erlComm.WriteCmd(memoryStream.ToArray(), (int)memoryStream.Position);
-                }
-            }
-            catch (ProtoException e) {
-                log.Error("Protobuf exception occured: " + e);
-                return;
-            }
+            SendMessage(robotsList);
         }
 
         private void HandleStartCmd() {
@@ -251,6 +243,19 @@ namespace RobossInterface {
             }
 
             communicator.ResetSimulation();
+        }
+
+        private void SendMessage<T>(T message) {
+            try {
+                using (var memoryStream = new MemoryStream()) {
+                    Serializer.Serialize(memoryStream, message);
+                    erlComm.WriteCmd(memoryStream.ToArray(), (int)memoryStream.Position);
+                }
+            }
+            catch (ProtoException e) {
+                log.Error("Protobuf exception occured: " + e);
+                return;
+            }
         }
 
         private static double CalcAngle(double w, double z) {

@@ -8,6 +8,7 @@
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 -export([send_wheels_cmd/2, request_state/1, request_robots_list/1, start_simulation/1, stop_simulation/1, reset_simulation/1]).
 
+-define(CONNECTION_TIMEOUT, 1000).
 -define(ROBOSS_INTERFACE_PATH, "../roboss_interface/bin/Debug/").
 -define(ROBOSS_INTERFACE_EXE, "RobossInterface.exe").
 
@@ -51,7 +52,14 @@ init({Hostname, TcpPort, RobotName}) ->
 		{cd, ?ROBOSS_INTERFACE_PATH},
 		exit_status]),
 
-	{ok, #state{port=Port, robot_name=RobotName}}.
+	receive
+		{Port, {data, Data}} ->
+			#ack{} = roboss_pb:decode_ack(list_to_binary(Data)),
+			{ok, #state{port=Port, robot_name=RobotName}}
+	after
+		3000 ->
+			{stop, connection_failed}
+	end.	
 
 handle_call(request_state, _From, State) ->
 	io:format("Got request state~n"),
@@ -67,7 +75,7 @@ handle_call(request_state, _From, State) ->
 			Reply = prepare_robot_state_reply(Data),
 			{reply, Reply, State}
 
-	after 1000 ->
+	after ?CONNECTION_TIMEOUT ->
 		{reply, timeout, State}
 
 	end;
