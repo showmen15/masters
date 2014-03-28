@@ -6,7 +6,7 @@
 
 -export([start_link/3, exit/1]).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
--export([send_wheels_cmd/2, request_state/1, start_simulation/1, stop_simulation/1, reset_simulation/1]).
+-export([send_wheels_cmd/2, request_state/1, request_robots_list/1, start_simulation/1, stop_simulation/1, reset_simulation/1]).
 
 -define(ROBOSS_INTERFACE_PATH, "../roboss_interface/bin/Debug/").
 -define(ROBOSS_INTERFACE_EXE, "RobossInterface.exe").
@@ -27,6 +27,9 @@ send_wheels_cmd(Pid, WheelsCmd) ->
 
 request_state(Pid) ->
 	gen_server:call(Pid, request_state).
+
+request_robots_list(Pid) ->
+	gen_server:call(Pid, request_robots_list).
 
 start_simulation(Pid) ->
 	gen_server:cast(Pid, start_simulation).
@@ -62,6 +65,25 @@ handle_call(request_state, _From, State) ->
 	receive
 		{Port, {data, Data}} ->
 			Reply = prepare_robot_state_reply(Data),
+			{reply, Reply, State}
+
+	after 1000 ->
+		{reply, timeout, State}
+
+	end;
+
+handle_call(request_robots_list, _From, State) ->
+	io:format("Got request_robots_list ~n"),
+
+	RequestPbRecord = #robossrequest{type = 'ROBOTS_LIST_REQUEST'},
+
+	EncodedRequest = roboss_pb:encode_robossrequest(RequestPbRecord),
+	send_to_port(State, EncodedRequest),
+
+	Port = State#state.port,
+	receive
+		{Port, {data, Data}} ->
+			Reply = prepare_robots_list_reply(Data),
 			{reply, Reply, State}
 
 	after 1000 ->
@@ -138,6 +160,10 @@ prepare_robot_state_reply(Data) ->
 		theta = RobotState#robotstate.theta,
 		timestamp = RobotState#robotstate.timestamp
 	}.
+
+prepare_robots_list_reply(Data) ->
+	RobotsList = roboss_pb:decode_robotslist(list_to_binary(Data)),
+	RobotsList#robotslist.robotnames.
 
 send_to_port(State, Msg) ->
 	State#state.port ! {self(), {command, Msg}}.

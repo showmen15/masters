@@ -120,6 +120,10 @@ namespace RobossInterface {
                             case RobossRequest.Type.RESET:
                                 HandleResetCmd();
                                 break;
+
+                            case RobossRequest.Type.ROBOTS_LIST_REQUEST:
+                                HandleRobotsListRequest();
+                                break;
                         }
                     }
                 }
@@ -185,6 +189,37 @@ namespace RobossInterface {
             try {
                 using (var memoryStream = new MemoryStream()) {
                     Serializer.Serialize(memoryStream, robotState);
+                    erlComm.WriteCmd(memoryStream.ToArray(), (int)memoryStream.Position);
+                }
+            }
+            catch (ProtoException e) {
+                log.Error("Protobuf exception occured: " + e);
+                return;
+            }
+        }
+
+        private void HandleRobotsListRequest() {
+            if (log.IsDebugEnabled) {
+                log.Debug("Got RobotsListsRequest command");
+            }
+
+            if (communicator.Receive(Communicator.RECEIVEBLOCKLEVEL_WaitForTimestamp) < 0) {
+                log.Error("Error occured while receiving simulation state");
+                return;
+            };
+
+            var robotsList = new RobotsList();
+            for (int i = 0; i < communicator.robotsCount; i++) {
+                robotsList.robotNames.Add(communicator.robots[i].name);
+            }
+
+            if (log.IsDebugEnabled) {
+                log.Debug(String.Format("Sending RobotsList: {0}", string.Join(",", robotsList.robotNames)));
+            }
+
+            try {
+                using (var memoryStream = new MemoryStream()) {
+                    Serializer.Serialize(memoryStream, robotsList);
                     erlComm.WriteCmd(memoryStream.ToArray(), (int)memoryStream.Position);
                 }
             }

@@ -12,6 +12,7 @@ message RobossRequest {
 		START = 2;
 		STOP = 3;
 		RESET = 4;
+		ROBOTS_LIST_REQUEST = 5;
 	}
 
 	required Type type = 1;
@@ -23,4 +24,8 @@ message WheelsCommand {
 	required double frontRight	= 2;
 	required double rearLeft	= 3;
 	required double rearRight	= 4;
+}
+
+message RobotsList {
+	repeated string robotNames = 1;
 }

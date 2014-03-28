@@ -86,7 +86,10 @@ namespace roboss
       STOP = 3,
             
       [global::ProtoBuf.ProtoEnum(Name=@"RESET", Value=4)]
-      RESET = 4
+      RESET = 4,
+            
+      [global::ProtoBuf.ProtoEnum(Name=@"ROBOTS_LIST_REQUEST", Value=5)]
+      ROBOTS_LIST_REQUEST = 5
     }
   
     private global::ProtoBuf.IExtension extensionObject;
@@ -127,6 +130,23 @@ namespace roboss
       get { return _rearRight; }
       set { _rearRight = value; }
     }
+    private global::ProtoBuf.IExtension extensionObject;
+    global::ProtoBuf.IExtension global::ProtoBuf.IExtensible.GetExtensionObject(bool createIfMissing)
+      { return global::ProtoBuf.Extensible.GetExtensionObject(ref extensionObject, createIfMissing); }
+  }
+  
+  [global::System.Serializable, global::ProtoBuf.ProtoContract(Name=@"RobotsList")]
+  public partial class RobotsList : global::ProtoBuf.IExtensible
+  {
+    public RobotsList() {}
+    
+    private readonly global::System.Collections.Generic.List<string> _robotNames = new global::System.Collections.Generic.List<string>();
+    [global::ProtoBuf.ProtoMember(1, Name=@"robotNames", DataFormat = global::ProtoBuf.DataFormat.Default)]
+    public global::System.Collections.Generic.List<string> robotNames
+    {
+      get { return _robotNames; }
+    }
+  
     private global::ProtoBuf.IExtension extensionObject;
     global::ProtoBuf.IExtension global::ProtoBuf.IExtensible.GetExtensionObject(bool createIfMissing)
       { return global::ProtoBuf.Extensible.GetExtensionObject(ref extensionObject, createIfMissing); }
