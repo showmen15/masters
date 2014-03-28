@@ -85,7 +85,11 @@ namespace RobossInterface {
 
             while (true) {
                 var readBytes = erlComm.ReadCmd(buffer);
-                
+
+                if (log.IsDebugEnabled) {
+                    log.Debug("readBytes = " + readBytes);
+                }
+
                 if (readBytes < 0) {
                     log.Info("Broken pipe, exiting.");
                     Environment.Exit(0);
@@ -95,7 +99,7 @@ namespace RobossInterface {
                     using (var memoryStream = new MemoryStream(buffer)) {
                         var robossRequest = Serializer.Deserialize<RobossRequest>(memoryStream);
 
-                        switch(robossRequest.type) {
+                        switch (robossRequest.type) {
                             case RobossRequest.Type.WHEELS_CMD:
                                 var wheelsCmd = robossRequest.wheelsCmd;
                                 HandleWheelsCmd(wheelsCmd);
@@ -123,6 +127,10 @@ namespace RobossInterface {
                     log.Error("Protobuf exception occured: " + e);
                     continue;
                 }
+                catch (Exception e) {
+                    log.Error("Exception occured: " + e);
+                    continue;
+                }
             }
         }
 
@@ -141,6 +149,8 @@ namespace RobossInterface {
             robot.joints[1].motorDesiredVelocity = wheelsCmd.frontRight;
             robot.joints[2].motorDesiredVelocity = wheelsCmd.rearLeft;
             robot.joints[3].motorDesiredVelocity = wheelsCmd.rearRight;
+
+            robot.Send();
         }
 
         private void HandleStateRequestCmd() {
@@ -153,7 +163,10 @@ namespace RobossInterface {
                 return;
             }
 
-            communicator.Receive(Communicator.RECEIVEBLOCKLEVEL_None);
+            if (communicator.Receive(Communicator.RECEIVEBLOCKLEVEL_WaitForTimestamp) < 0) {
+                log.Error("Error occured while receiving simulation state");
+                return;
+            };
 
             var robotState = new RobotState();
 

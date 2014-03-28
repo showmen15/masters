@@ -4,3 +4,10 @@
 	rear_left,
 	rear_right
 }).
+
+-record(robot_state, {
+	x,
+	y,
+	theta,
+	timestamp
+}).
