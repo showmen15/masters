@@ -9,6 +9,7 @@ namespace RobossInterface {
     class Program {
         private static readonly string LOG4NET_CONFIGFILE = "log4net.config";
         private static readonly string ROBOTNAME_VAR = "ROBOTNAME";
+        private static readonly string CONTROL_NAME = "control";
 
         private static readonly ILog log = LogManager.GetLogger(typeof(Program));
 
@@ -29,11 +30,12 @@ namespace RobossInterface {
 
             if (args.Length == 3) {
                 robotName = args[2];
+                System.Environment.SetEnvironmentVariable(ROBOTNAME_VAR, robotName);
             } else {
                 robotName = null;
+                System.Environment.SetEnvironmentVariable(ROBOTNAME_VAR, CONTROL_NAME);
             }
-
-            System.Environment.SetEnvironmentVariable(ROBOTNAME_VAR, robotName);
+            
             XmlConfigurator.Configure(new System.IO.FileInfo(LOG4NET_CONFIGFILE));
 
             log.Info(String.Format("Starting with hostname = {0}, port = {1}, robotName = {2}", 

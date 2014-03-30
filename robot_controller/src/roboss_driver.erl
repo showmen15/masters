@@ -4,7 +4,7 @@
 -include("include/records.hrl").
 -include("include/roboss_pb.hrl").
 
--export([start_link/3, stop/1]).
+-export([start_link/1, start_link/0, stop/1]).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 -export([send_wheels_cmd/2, request_state/1, request_robots_list/1, start_simulation/1, stop_simulation/1, reset_simulation/1]).
 
@@ -17,8 +17,11 @@
 	robot_name
 	}).
 
-start_link(Hostname, Port, RobotName) -> 
-	gen_server:start_link(?MODULE, {Hostname, Port, RobotName}, []).
+start_link(RobotName) -> 
+	gen_server:start_link(?MODULE, RobotName, []).
+
+start_link() -> 
+	gen_server:start_link(?MODULE, undefined, []).
 
 stop(Pid) -> 
 	gen_server:call(Pid, stop).
@@ -42,13 +45,21 @@ reset_simulation(Pid) ->
 	gen_server:cast(Pid, reset_simulation).
 
 %% gen_server callbacks
-init({Hostname, TcpPort, RobotName}) ->
-	io:format("Init ~s ~s ~s ~n", [Hostname, TcpPort, RobotName]),
+init(RobotName) ->
+	Hostname = application:get_env(hostname),
+	TcpPort = application:get_env(port),
+
+	io:format("roboss_driver: ~s ~s ~s ~n", [Hostname, TcpPort, RobotName]),
+
+	Args = case RobotName of
+		undefined -> [Hostname, TcpPort];
+		_ -> [Hostname, TcpPort, RobotName]
+	end,
 
 	%process_flag(trap_exit, true),
 	Port = open_port({spawn_executable, ?ROBOSS_INTERFACE_PATH ++ ?ROBOSS_INTERFACE_EXE}, [
 		{packet, 2}, 
-		{args, [Hostname, TcpPort, RobotName]},
+		{args, Args},
 		{cd, ?ROBOSS_INTERFACE_PATH},
 		exit_status]),
 
@@ -61,7 +72,7 @@ init({Hostname, TcpPort, RobotName}) ->
 			{stop, connection_failed}
 	end.	
 
-handle_call(request_state, _From, State) ->
+handle_call(request_state, _From, State) when State#state.robot_name /= undefined ->
 	io:format("Got request state~n"),
 
 	RequestPbRecord = #robossrequest{type = 'STATE_REQUEST'},
@@ -103,7 +114,7 @@ handle_call(stop, _From, State) ->
 	{stop, normal, ok, State}.
 
 
-handle_cast({wheels_cmd, WheelsCmd}, State) ->
+handle_cast({wheels_cmd, WheelsCmd}, State) when State#state.robot_name /= undefined ->
 	io:format("Got wheels_cmd ~w~n", [WheelsCmd]),
 	
 	WheelsCmdPbRecord = #wheelscommand{

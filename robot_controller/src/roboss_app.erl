@@ -9,8 +9,8 @@
 %% Application callbacks
 %% ===================================================================
 
-start(_StartType, StartArgs) ->
-    roboss_sup:start_link(StartArgs).
+start(_StartType, _StartArgs) ->
+    roboss_sup:start_link().
 
 stop(_State) ->
     ok.

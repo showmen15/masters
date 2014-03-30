@@ -37,7 +37,10 @@ namespace RobossInterface {
         public void Connect() {
             communicator = new Communicator();
 
-            if (communicator.Connect(hostname, port, robotName + "_client") < 0) {
+            string clientName = String.Format("{0}_client",
+                robotName == null ? "control" : robotName); 
+
+            if (communicator.Connect(hostname, port, clientName) < 0) {
                 log.Fatal("Cannot connect to RoBOSS Controller. Exiting.");
                 communicator.Dispose();
                 Environment.Exit(1);
@@ -78,7 +81,7 @@ namespace RobossInterface {
         }
 
         public void StartLoop() {
-            if (robot == null) {
+            if (communicator == null) {
                 log.Error("Cannot start loop before connecting to Controller");
                 return;
             }
