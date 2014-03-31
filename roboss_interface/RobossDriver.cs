@@ -167,8 +167,11 @@ namespace RobossInterface {
             robot.joints[2].motorDesiredVelocity = wheelsCmd.rearLeft;
             robot.joints[3].motorDesiredVelocity = wheelsCmd.rearRight;
 
-            robot.Send();
-        }
+            if (robot.Send() < 0) {
+                log.Error("Error in sending command to robot");
+                return;
+            }
+        }   
 
         private void HandleStateRequestCmd() {
             if (log.IsDebugEnabled) {

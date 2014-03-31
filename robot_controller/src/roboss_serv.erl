@@ -1,10 +1,10 @@
 -module(roboss_serv).
 
 -behaviour(gen_server).
--export([start_link/0, stop/0]).
+-export([start_link/0, stop/0, send_wheels_cmd/2, request_state/1]).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
--include("include/records.hrl"),
+-include("include/records.hrl").
 
 -record(state, {
 	robots_dict
@@ -19,10 +19,10 @@ stop() ->
 	gen_server:call(?MODULE, stop).
 
 send_wheels_cmd(RobotName, WheelsCmd) ->
-	ok.
+	gen_server:call(?MODULE, {send_wheels_cmd, {RobotName, WheelsCmd}}).
 
-request_state(RobotName, WheelsCmd) ->
-	ok.
+request_state(RobotName) ->
+	gen_server:call(?MODULE, {request_state, {RobotName}}).
 
 %% Callbacks
 
@@ -34,6 +34,19 @@ init(_Args) ->
 	
 	{ok, State}.
 
+
+handle_call({send_wheels_cmd, {RobotName, WheelsCmd}}, _From, State) ->
+	RobotsDict = State#state.robots_dict,
+	Pid = dict:fetch(RobotName, RobotsDict),
+	roboss_driver:send_wheels_cmd(Pid, WheelsCmd),
+	{reply, ok, State};
+
+handle_call({request_state, {RobotName}}, _From, State) ->
+	io:format("rs~n"),
+	RobotsDict = State#state.robots_dict,
+	Pid = dict:fetch(RobotName, RobotsDict),
+	Reply = roboss_driver:request_state(Pid),
+	{reply, {ok, Reply}, State};
 
 handle_call(stop, _From, State) ->
 	{stop, normal, stopped, State};
@@ -99,6 +112,6 @@ spawn_robot_driver(RobotName, RobotsDict) ->
 		worker,
 		[roboss_driver]
 	},
-	{ok, Pid} = supervisor:start_child(RobotName, ChildSpec),
+	{ok, Pid} = supervisor:start_child(roboss_sup, ChildSpec),
 
-	dict:append(RobotName, Pid, RobotsDict).
+	dict:store(RobotName, Pid, RobotsDict).

@@ -46,8 +46,8 @@ reset_simulation(Pid) ->
 
 %% gen_server callbacks
 init(RobotName) ->
-	Hostname = application:get_env(hostname),
-	TcpPort = application:get_env(port),
+	{ok, Hostname} = application:get_env(hostname),
+	{ok, TcpPort} = application:get_env(port),
 
 	io:format("roboss_driver: ~s ~s ~s ~n", [Hostname, TcpPort, RobotName]),
 
@@ -56,12 +56,11 @@ init(RobotName) ->
 		_ -> [Hostname, TcpPort, RobotName]
 	end,
 
-	%process_flag(trap_exit, true),
+	process_flag(trap_exit, true),
 	Port = open_port({spawn_executable, ?ROBOSS_INTERFACE_PATH ++ ?ROBOSS_INTERFACE_EXE}, [
 		{packet, 2}, 
 		{args, Args},
-		{cd, ?ROBOSS_INTERFACE_PATH},
-		exit_status]),
+		{cd, ?ROBOSS_INTERFACE_PATH}]),
 
 	receive
 		{Port, {data, Data}} ->
@@ -73,7 +72,7 @@ init(RobotName) ->
 	end.	
 
 handle_call(request_state, _From, State) when State#state.robot_name /= undefined ->
-	io:format("Got request state~n"),
+	%io:format("Got request state~n"),
 
 	RequestPbRecord = #robossrequest{type = 'STATE_REQUEST'},
 
@@ -92,7 +91,7 @@ handle_call(request_state, _From, State) when State#state.robot_name /= undefine
 	end;
 
 handle_call(request_robots_list, _From, State) ->
-	io:format("Got request_robots_list ~n"),
+	%io:format("Got request_robots_list ~n"),
 
 	RequestPbRecord = #robossrequest{type = 'ROBOTS_LIST_REQUEST'},
 
@@ -115,7 +114,7 @@ handle_call(stop, _From, State) ->
 
 
 handle_cast({wheels_cmd, WheelsCmd}, State) when State#state.robot_name /= undefined ->
-	io:format("Got wheels_cmd ~w~n", [WheelsCmd]),
+	%io:format("Got wheels_cmd ~w~n", [WheelsCmd]),
 	
 	WheelsCmdPbRecord = #wheelscommand{
 		frontleft = WheelsCmd#wheels_cmd.front_left,

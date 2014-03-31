@@ -7,7 +7,7 @@
                   kernel,
                   stdlib
                  ]},
-  {mod, { roboss_app, {"192.168.93.131", "4468"}}},
+  {mod, { roboss_app, []}},
   {env, [
   	{hostname, "192.168.93.131"},
   	{port, "4468"}]}

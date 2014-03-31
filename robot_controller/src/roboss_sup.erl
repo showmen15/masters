@@ -6,7 +6,7 @@
 -export([start_link/0]).
 
 %% Supervisor callbacks
--export([init/0]).
+-export([init/1]).
 
 %% Helper macro for declaring children of supervisor
 -define(CHILD(I, Type), {I, {I, start_link, []}, permanent, 5000, Type, [I]}).
@@ -22,7 +22,7 @@ start_link() ->
 %% Supervisor callbacks
 %% ===================================================================
 
-init() ->
+init(_Args) ->
 	MaxRestart = 1,
 	MaxTime = 10,
 	ChildSpec = {
