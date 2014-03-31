@@ -65,6 +65,7 @@ init(RobotName) ->
 	receive
 		{Port, {data, Data}} ->
 			#ack{} = roboss_pb:decode_ack(list_to_binary(Data)),
+			send_pid_to_serv(RobotName),
 			{ok, #state{port=Port, robot_name=RobotName}}
 	after
 		3000 ->
@@ -185,3 +186,10 @@ prepare_robots_list_reply(Data) ->
 
 send_to_port(State, Msg) ->
 	State#state.port ! {self(), {command, Msg}}.
+
+send_pid_to_serv(RobotName) ->
+	case whereis(roboss_serv) of
+		undefined -> undefined;
+		_ -> roboss_serv:register_driver(RobotName, self()),
+			ok 
+	end.
