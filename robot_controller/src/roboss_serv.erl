@@ -1,7 +1,7 @@
 -module(roboss_serv).
 
 -behaviour(gen_server).
--export([start_link/0, stop/0, send_wheels_cmd/2, request_state/1, register_driver/2]).
+-export([start_link/0, stop/0, send_wheels_cmd/2, request_state/1, register_driver/2, is_alive/0]).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
 -include("include/records.hrl").
@@ -13,24 +13,29 @@
 %% Public API
 
 start_link() ->
-	gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
+	gen_server:start_link({global, ?MODULE}, ?MODULE, [], []).
 
 stop() ->
-	gen_server:call(?MODULE, stop).
+	gen_server:call({global, ?MODULE}, stop).
 
 send_wheels_cmd(RobotName, WheelsCmd) ->
-	gen_server:call(?MODULE, {send_wheels_cmd, {RobotName, WheelsCmd}}).
+	gen_server:call({global, ?MODULE}, {send_wheels_cmd, {RobotName, WheelsCmd}}).
 
 request_state(RobotName) ->
-	gen_server:call(?MODULE, {request_state, {RobotName}}).
+	gen_server:call({global, ?MODULE}, {request_state, {RobotName}}).
 
 register_driver(RobotName, Pid) ->
-	gen_server:cast(?MODULE, {register_driver, {RobotName, Pid}}).
+	gen_server:cast({global, ?MODULE}, {register_driver, {RobotName, Pid}}).
+
+is_alive() ->
+	global:whereis_name(?MODULE).
 
 %% Callbacks
 
 init(_Args) ->
 	io:format("roboss_serv~n"),
+	%global:register_name(?MODULE, self()),
+
 	State = #state{},
 	self() ! start_control_driver,
 	
@@ -44,7 +49,7 @@ handle_call({send_wheels_cmd, {RobotName, WheelsCmd}}, _From, State) ->
 	{reply, ok, State};
 
 handle_call({request_state, {RobotName}}, _From, State) ->
-	io:format("rs~n"),
+	%io:format("rs~n"),
 	RobotsDict = State#state.robots_dict,
 	Pid = dict:fetch(RobotName, RobotsDict),
 	Reply = roboss_driver:request_state(Pid),
@@ -68,6 +73,7 @@ handle_cast(_Msg, State) ->
 
 handle_info(start_control_driver, State) ->
 	{ok, Pid} = spawn_control_driver(State),
+	spawn_drivers_sup(),
 	RobotsList = roboss_driver:request_robots_list(Pid),
 	spawn_robots_drivers(RobotsList),
 	{noreply, State};
@@ -95,6 +101,16 @@ spawn_control_driver(_State) ->
 	},
 	supervisor:start_child(roboss_sup, ChildSpec).
 
+spawn_drivers_sup() ->
+	ChildSpec = {
+		drivers_sup,
+		{roboss_drivers_sup, start_link, []},
+		temporary,
+		1000,
+		supervisor,
+		[roboss_drivers_sup]
+	},
+	supervisor:start_child(roboss_sup, ChildSpec).
 
 
 spawn_robots_drivers(RobotsList) ->
@@ -103,12 +119,4 @@ spawn_robots_drivers(RobotsList) ->
 		RobotsList).
 
 spawn_robot_driver(RobotName) ->
-	ChildSpec = {
-		RobotName,
-		{roboss_driver, start_link, [RobotName]},
-		temporary,
-		1000,
-		worker,
-		[roboss_driver]
-	},
-	{ok, _Pid} = supervisor:start_child(roboss_sup, ChildSpec).
+	{ok, _Pid} = supervisor:start_child(roboss_drivers_sup, [RobotName]).

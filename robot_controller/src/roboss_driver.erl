@@ -188,7 +188,7 @@ send_to_port(State, Msg) ->
 	State#state.port ! {self(), {command, Msg}}.
 
 send_pid_to_serv(RobotName) ->
-	case whereis(roboss_serv) of
+	case roboss_serv:is_alive() of
 		undefined -> undefined;
 		_ -> roboss_serv:register_driver(RobotName, self()),
 			ok 

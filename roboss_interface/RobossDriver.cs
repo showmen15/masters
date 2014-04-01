@@ -183,7 +183,7 @@ namespace RobossInterface {
                 return;
             }
 
-            if (communicator.Receive(Communicator.RECEIVEBLOCKLEVEL_WaitForTimestamp) < 0) {
+            if (communicator.Receive(Communicator.RECEIVEBLOCKLEVEL_None) < 0) {
                 log.Error("Error occured while receiving simulation state");
                 return;
             };

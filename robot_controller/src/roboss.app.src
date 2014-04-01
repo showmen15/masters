@@ -2,13 +2,13 @@
  [
   {description, "Erlang interface to RoBOSS"},
   {vsn, "0.0.1"},
-  {registered, [roboss_driver]},
+  {registered, [roboss_driver, roboss_serv]},
   {applications, [
                   kernel,
                   stdlib
                  ]},
   {mod, { roboss_app, []}},
   {env, [
-  	{hostname, "192.168.93.131"},
+  	{hostname, "10.0.0.1"},
   	{port, "4468"}]}
  ]}.
