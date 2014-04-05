@@ -10,5 +10,9 @@
   {mod, { roboss_app, []}},
   {env, [
   	{hostname, "10.0.0.1"},
-  	{port, "4468"}]}
+  	{port, "4468"},
+    {roboss_interface_path, "../roboss_interface/bin/Debug/"},
+    {roboss_interface_exe, "RobossInterface.exe"}
+  ]}
+
  ]}.

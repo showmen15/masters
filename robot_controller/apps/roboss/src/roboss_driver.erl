@@ -9,8 +9,6 @@
 -export([send_wheels_cmd/2, request_state/1, request_robots_list/1, start_simulation/1, stop_simulation/1, reset_simulation/1]).
 
 -define(CONNECTION_TIMEOUT, 1000).
--define(ROBOSS_INTERFACE_PATH, "../roboss_interface/bin/Debug/").
--define(ROBOSS_INTERFACE_EXE, "RobossInterface.exe").
 
 -record(state, {
 	port,
@@ -48,6 +46,8 @@ reset_simulation(Pid) ->
 init(RobotName) ->
 	{ok, Hostname} = application:get_env(hostname),
 	{ok, TcpPort} = application:get_env(port),
+	{ok, RobossInterfacePath} = application:get_env(roboss_interface_path),
+	{ok, RobossInterfaceExe} = application:get_env(roboss_interface_exe),
 
 	io:format("roboss_driver: ~s ~s ~s ~n", [Hostname, TcpPort, RobotName]),
 
@@ -57,10 +57,10 @@ init(RobotName) ->
 	end,
 
 	process_flag(trap_exit, true),
-	Port = open_port({spawn_executable, ?ROBOSS_INTERFACE_PATH ++ ?ROBOSS_INTERFACE_EXE}, [
+	Port = open_port({spawn_executable, RobossInterfacePath ++ RobossInterfaceExe}, [
 		{packet, 2}, 
 		{args, Args},
-		{cd, ?ROBOSS_INTERFACE_PATH}]),
+		{cd, RobossInterfacePath}]),
 
 	receive
 		{Port, {data, Data}} ->
