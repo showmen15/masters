@@ -3,8 +3,12 @@
 
 main([]) ->
 	code:add_pathz("deps/protobuffs/ebin/"),
-	Options = [{output_src_dir,"src"},{output_include_dir,"include"}],
-	protobuffs_compile:generate_source("../protos/roboss.proto",Options);
+	Options = [{output_src_dir,"apps/roboss/src"},{output_include_dir,"apps/roboss/include"}],
+	protobuffs_compile:generate_source("../protos/roboss.proto",Options),
+
+	Options2 = [{output_src_dir,"apps/client/src"},{output_include_dir,"apps/client/include"}],
+	protobuffs_compile:generate_source("../protos/client.proto",Options2);
+
 
 main ([File]) ->
 code:add_pathz("deps/protobuffs/ebin/"),

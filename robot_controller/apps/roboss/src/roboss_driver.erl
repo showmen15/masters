@@ -1,7 +1,7 @@
 -module(roboss_driver).
 -behaviour(gen_server).
 
--include("include/records.hrl").
+-include("../../include/records.hrl").
 -include("include/roboss_pb.hrl").
 
 -export([start_link/1, start_link/0, stop/1]).

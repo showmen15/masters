@@ -1,0 +1,35 @@
+message StateMessage {
+	repeated RobotFullState robotState = 1;
+}
+
+message RobotFullState {
+	required string robotName = 1;
+	required double x = 2;
+	required double y = 3;
+	required double theta = 4;
+	required int64 timestamp = 5;
+}	
+
+message SetupMessage {
+	required string robotName = 1;
+}
+
+message Ack {}
+
+message CommandMessage {
+	enum Type {
+		REQUEST_STATE = 1;
+		ROBOT_COMMAND = 2;
+	}
+
+	required Type type = 1;
+	optional RobotCommand robotCommand = 2;
+}
+
+message RobotCommand {
+	required double frontLeft	= 1;
+	required double frontRight	= 2;
+	required double rearLeft	= 3;
+	required double rearRight	= 4;
+}
+

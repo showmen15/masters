@@ -8,5 +8,8 @@
                   stdlib
                  ]},
   {mod, { client_app, []}},
-  {env, []}
+  {env, [
+  	{client_path, "../python-controller"},
+  	{client_command, "python controller.py"}
+  ]}
  ]}.
