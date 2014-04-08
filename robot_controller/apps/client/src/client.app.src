@@ -10,6 +10,7 @@
   {mod, { client_app, []}},
   {env, [
   	{client_path, "../python-controller"},
-  	{client_command, "python controller.py"}
+  	{client_command, "python controller.py"},
+    {roboss_node, roboss@rose}
   ]}
  ]}.

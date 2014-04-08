@@ -187,6 +187,9 @@ prepare_robots_list_reply(Data) ->
 send_to_port(State, Msg) ->
 	State#state.port ! {self(), {command, Msg}}.
 
+send_pid_to_serv(undefined) ->
+	ok;
+
 send_pid_to_serv(RobotName) ->
 	case roboss_serv:is_alive() of
 		undefined -> undefined;

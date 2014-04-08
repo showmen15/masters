@@ -28,19 +28,18 @@ init(RobotName) ->
 	ClientPath = "../python_controller/",
 	ClientCommand = "controller.py",
 	
-	io:format("client_driver: ~s ~s~n", [ClientPath, ClientCommand]),
+	io:format("client_driver: ~s ~s ~s~n", [ClientPath, ClientCommand, RobotName]),
 
 	process_flag(trap_exit, true),
 	Port = open_port({spawn_executable, ClientPath ++ ClientCommand}, [
 		{packet, 2}, 
-		{args, []},
+		{args, [RobotName]},
 		{cd, ClientPath}]),
 
 	receive
 		{Port, {data, Data}} ->
 			#ack{} = client_pb:decode_ack(list_to_binary(Data)),
 			State = #state{port=Port, robot_name=RobotName},
-			send_setup_msg(State),
 			{ok, State}
 	after
 		3000 ->
@@ -83,10 +82,6 @@ code_change(_OldVsn, State, _Extra) ->
 
 send_to_port(State, Msg) ->
 	State#state.port ! {self(), {command, Msg}}.
-
-	send_setup_msg(#state{robot_name = RobotName} = State) -> 
-	SetupMsg = client_pb:encode_setupmessage(#setupmessage{robotname = RobotName}),
-	send_to_port(State, SetupMsg).
 
 request_state(State) ->
 	{ok, RobotState} = roboss_serv:request_state(State#state.robot_name),

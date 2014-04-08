@@ -1,10 +1,10 @@
 -module(roboss_serv).
 
 -behaviour(gen_server).
--export([start_link/0, stop/0, send_wheels_cmd/2, request_state/1, register_driver/2, is_alive/0]).
+-export([start_link/0, stop/0, send_wheels_cmd/2, request_state/1, register_driver/2, is_alive/0, get_robots_list/0]).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
--include("include/records.hrl").
+-include("../../include/records.hrl").
 
 -record(state, {
 	robots_dict = dict:new()
@@ -28,7 +28,13 @@ register_driver(RobotName, Pid) ->
 	gen_server:cast({global, ?MODULE}, {register_driver, {RobotName, Pid}}).
 
 is_alive() ->
-	global:whereis_name(?MODULE).
+	case global:whereis_name(?MODULE) of
+		undefined -> false;
+		_ -> true
+	end.
+
+get_robots_list() ->
+	gen_server:call({global, ?MODULE}, get_robots_list).
 
 %% Callbacks
 
@@ -53,6 +59,10 @@ handle_call({request_state, {RobotName}}, _From, State) ->
 	RobotsDict = State#state.robots_dict,
 	Pid = dict:fetch(RobotName, RobotsDict),
 	Reply = roboss_driver:request_state(Pid),
+	{reply, {ok, Reply}, State};
+
+handle_call(get_robots_list, _From, State) ->
+	Reply = dict:fetch_keys(State#state.robots_dict),
 	{reply, {ok, Reply}, State};
 
 handle_call(stop, _From, State) ->
