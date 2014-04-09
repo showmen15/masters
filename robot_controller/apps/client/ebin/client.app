@@ -8,4 +8,5 @@
                     {client_command,"python controller.py"},
                     {roboss_node,roboss@rose}]},
               {modules,[client_app,client_clients_sup,client_controller,
-                        client_pb,client_serv,client_sup]}]}.
+                        client_pb,client_serv,client_state_manager,client_sup,
+                        listener]}]}.

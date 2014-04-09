@@ -25,29 +25,29 @@ class SimpleAlgorithm:
     def loop(self):
         while True:
             start_time = time.time()
-            states = self._controller.request_states()
-            myrobot = states[0]
+            states_dict = self._controller.request_states()
 
-            if self._start is None:
-                self._start = myrobot.get_timestamp()
+            if self._robot_name in states_dict:
+                myrobot = states_dict[self._robot_name]
 
-            self._counter += 1
-            if self._counter == 1000:
-                self._counter = 0
-                t = time.time() - self._before
-                self._before = time.time()
-                self._logger.info("time: %f, %d" % (t, myrobot.get_timestamp()))
+                if self._start is None:
+                    self._start = myrobot.get_timestamp()
 
-            if myrobot.get_timestamp() - self._start > 1000*1000*10:
-                self._start = myrobot.get_timestamp()
-                self._dir *= -1
+                self._counter += 1
+                if self._counter == 1000:
+                    self._counter = 0
+                    t = time.time() - self._before
+                    self._before = time.time()
+                    self._logger.info("time: %f, %d" % (t, myrobot.get_timestamp()))
 
-            speed = self._dir * 10
+                if myrobot.get_timestamp() - self._start > 1000*1000*10:
+                    self._start = myrobot.get_timestamp()
+                    #self._dir *= -1
 
-            self._controller.send_robot_command(RobotCommand(speed, speed, speed, speed))
+                speed = self._dir * 5
+
+                self._controller.send_robot_command(RobotCommand(speed, speed, speed, speed))
 
             time_diff = self.INTERVAL - (time.time() - start_time)
             if time_diff > 0:
                 time.sleep(time_diff)
-
-

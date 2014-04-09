@@ -30,6 +30,16 @@ init(_Args) ->
 		worker,
 		[client_clients_sup]
 	},
+
+	StateManagerSpec = {
+		state_manager,
+		{client_state_manager, start_link, []},
+		permanent,
+		1000,
+		worker,
+		[client_state_manager]
+	},
+
 	ServSpec = {
 		serv,
 		{client_serv, start_link, []},
@@ -39,5 +49,5 @@ init(_Args) ->
 		[client_serv]
 	},
 
-    {ok, {{one_for_all, MaxRestart, MaxTime}, [SupSpec, ServSpec]}}.
+    {ok, {{one_for_all, MaxRestart, MaxTime}, [SupSpec, StateManagerSpec, ServSpec]}}.
 

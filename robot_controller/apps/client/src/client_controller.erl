@@ -56,8 +56,7 @@ handle_info({Port, {data, Data}}, State) when Port =:= State#state.port ->
 	CmdMsg = #commandmessage{} = client_pb:decode_commandmessage(list_to_binary(Data)),
 	case CmdMsg#commandmessage.type of
 		'REQUEST_STATE' ->
-			RobotState = request_state(State),
-			send_request_state_reply(State, RobotState);
+			send_request_state_reply(State);
 
 		'ROBOT_COMMAND' ->
 			send_robot_command(State, CmdMsg#commandmessage.robotcommand);
@@ -83,20 +82,21 @@ code_change(_OldVsn, State, _Extra) ->
 send_to_port(State, Msg) ->
 	State#state.port ! {self(), {command, Msg}}.
 
-request_state(State) ->
-	{ok, RobotState} = roboss_serv:request_state(State#state.robot_name),
-	RobotState.
+send_request_state_reply(State) ->
+	{ok, RobotsStateDict} = client_state_manager:request_state(),
 
-send_request_state_reply(State, #robot_state{} = RobotState) ->
-	RobotFullState = #robotfullstate{
-		robotname = State#state.robot_name,
-		x = RobotState#robot_state.x,
-		y = RobotState#robot_state.y,
-		theta = RobotState#robot_state.theta,
-		timestamp = RobotState#robot_state.timestamp
-	},
+	Fun = fun ({RobotName, RobotState}) ->
+		#robotfullstate{
+			robotname = RobotName,
+			x = RobotState#robot_state.x,
+			y = RobotState#robot_state.y,
+			theta = RobotState#robot_state.theta,
+			timestamp = RobotState#robot_state.timestamp
+		} end,
 
-	StateMsg = #statemessage{robotstate = [RobotFullState]},
+	StatesList = lists:map(Fun, dict:to_list(RobotsStateDict)),
+
+	StateMsg = #statemessage{robotstate = StatesList},
 	StateMsgEncoded = client_pb:encode_statemessage(StateMsg),
 	send_to_port(State, StateMsgEncoded).
 

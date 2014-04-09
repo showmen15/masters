@@ -5,6 +5,9 @@ class State():
     def __init__(self, full_state):
         self._full_state = full_state
 
+    def get_robot_name(self):
+        return self._full_state.robotName
+
     def get_x(self):
         return self._full_state.x
 

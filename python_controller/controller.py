@@ -74,8 +74,14 @@ class Controller:
     def request_states(self):
         self.send_request_state()
         state_msg = self.receive_state_msg()
-        states = [State(x) for x in state_msg.robotState]
-        return states
+
+        states_dict = {}
+
+        for rs in state_msg.robotState:
+            state = State(rs)
+            states_dict[state.get_robot_name()] = state
+
+        return states_dict
 
 def log_uncaught_exceptions(ex_cls, ex, tb):
     logging.critical(''.join(traceback.format_tb(tb)))

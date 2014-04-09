@@ -2,6 +2,7 @@
 
 -behaviour(gen_server).
 -export([start_link/0, stop/0, send_wheels_cmd/2, request_state/1, register_driver/2, is_alive/0, get_robots_list/0]).
+-export([request_notifies/1]).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
 -include("../../include/records.hrl").
@@ -27,6 +28,9 @@ request_state(RobotName) ->
 register_driver(RobotName, Pid) ->
 	gen_server:cast({global, ?MODULE}, {register_driver, {RobotName, Pid}}).
 
+request_notifies(Pid) ->
+	gen_server:call({global, ?MODULE}, {request_notifies, Pid}).
+
 is_alive() ->
 	case global:whereis_name(?MODULE) of
 		undefined -> false;
@@ -40,8 +44,7 @@ get_robots_list() ->
 
 init(_Args) ->
 	io:format("roboss_serv~n"),
-	%global:register_name(?MODULE, self()),
-
+	
 	State = #state{},
 	self() ! start_control_driver,
 	
@@ -65,9 +68,12 @@ handle_call(get_robots_list, _From, State) ->
 	Reply = dict:fetch_keys(State#state.robots_dict),
 	{reply, {ok, Reply}, State};
 
+handle_call({request_notifies, Pid}, _From, State) ->
+	_PidsList = spawn_notifiers(State, Pid),
+	{reply, ok, State};
+
 handle_call(stop, _From, State) ->
 	{stop, normal, stopped, State};
-
 
 handle_call(_Request, _From, State) ->
 	{reply, ok, State}.
@@ -83,7 +89,6 @@ handle_cast(_Msg, State) ->
 
 handle_info(start_control_driver, State) ->
 	{ok, Pid} = spawn_control_driver(State),
-	spawn_drivers_sup(),
 	RobotsList = roboss_driver:request_robots_list(Pid),
 	spawn_robots_drivers(RobotsList),
 	{noreply, State};
@@ -91,7 +96,6 @@ handle_info(start_control_driver, State) ->
 handle_info(Info, State) ->
 	io:format("info: ~w ~n", [Info]),
 	{noreply, State}.
-
 
 terminate(_Reason, _State) ->
 	ok.
@@ -111,18 +115,6 @@ spawn_control_driver(_State) ->
 	},
 	supervisor:start_child(roboss_sup, ChildSpec).
 
-spawn_drivers_sup() ->
-	ChildSpec = {
-		drivers_sup,
-		{roboss_drivers_sup, start_link, []},
-		temporary,
-		1000,
-		supervisor,
-		[roboss_drivers_sup]
-	},
-	supervisor:start_child(roboss_sup, ChildSpec).
-
-
 spawn_robots_drivers(RobotsList) ->
 	lists:map(
 		fun (RobotName) -> spawn_robot_driver(RobotName) end,
@@ -130,3 +122,11 @@ spawn_robots_drivers(RobotsList) ->
 
 spawn_robot_driver(RobotName) ->
 	{ok, _Pid} = supervisor:start_child(roboss_drivers_sup, [RobotName]).
+
+spawn_notifiers(State, Pid) ->
+	RobotsList = dict:fetch_keys(State#state.robots_dict),
+	lists:map(
+		fun (RobotName) -> roboss_notifiers_sup:start_child(RobotName, Pid) end,
+		RobotsList).
+
+	

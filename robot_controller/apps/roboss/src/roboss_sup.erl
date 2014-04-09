@@ -22,7 +22,26 @@ start_link() ->
 init(_Args) ->
 	MaxRestart = 1,
 	MaxTime = 10,
-	ChildSpec = {
+	
+	DriverSupSpec = {
+		drivers_sup,
+		{roboss_drivers_sup, start_link, []},
+		temporary,
+		1000,
+		supervisor,
+		[roboss_drivers_sup]
+	},
+
+	NotifiersSupSpec = {
+		notifiers_sup,
+		{roboss_notifiers_sup, start_link, []},
+		temporary,
+		1000,
+		supervisor,
+		[roboss_notifiers_sup]
+	},
+
+	ServSpec = {
 		serv,
 		{roboss_serv, start_link, []},
 		permanent,
@@ -31,4 +50,6 @@ init(_Args) ->
 		[roboss_serv]
 	},
 
-    {ok, {{one_for_all, MaxRestart, MaxTime}, [ChildSpec]}}.
+
+
+    {ok, {{one_for_all, MaxRestart, MaxTime}, [DriverSupSpec, NotifiersSupSpec, ServSpec]}}.
