@@ -34,11 +34,13 @@ class SimpleAlgorithm:
                     self._start = myrobot.get_timestamp()
 
                 self._counter += 1
-                if self._counter == 1000:
+                if self._counter == 250:
                     self._counter = 0
-                    t = time.time() - self._before
+                    t = (time.time() - self._before) / 4.0
                     self._before = time.time()
                     self._logger.info("time: %f, %d" % (t, myrobot.get_timestamp()))
+                    self._logger.info("state: %s" % (states_dict.values(), ))
+
 
                 if myrobot.get_timestamp() - self._start > 1000*1000*10:
                     self._start = myrobot.get_timestamp()
