@@ -1,4 +1,4 @@
--module(client_clients_sup).
+-module(client_controllers_sup).
 
 -behaviour(supervisor).
 

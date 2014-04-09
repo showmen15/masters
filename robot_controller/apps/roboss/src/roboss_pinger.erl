@@ -6,6 +6,7 @@ start_link(ListenerPid, NotifiersPids) ->
 	{ok, spawn_link(?MODULE, init, [ListenerPid, NotifiersPids])}.
 
 init(ListenerPid, NotifiersPids) ->
+	io:format("~s started~n", [?MODULE]),
 	loop(ListenerPid, NotifiersPids).
 
 loop(ListenerPid, NotifiersPids) ->

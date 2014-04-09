@@ -21,16 +21,8 @@ stop() ->
 
 init(_Args) ->
 	io:format("~s started~n", [?MODULE]),
-
-	{ok, RobossNode} = application:get_env(roboss_node),
-	net_kernel:connect(RobossNode),
-	case roboss_serv:is_alive() of
-		false ->  
-			{stop, "Roboss node not connected"};
-		true ->
-			self() ! spawn_clients,
-			{ok, #state{}}
-	end.
+	self() ! spawn_clients,
+	{ok, #state{}}.
 
 handle_call(stop, _From, State) ->
 	{stop, normal, stopped, State};
@@ -44,7 +36,7 @@ handle_cast(_Msg, State) ->
 handle_info(spawn_clients, State) ->
 	{ok, RobotsList} = roboss_serv:get_robots_list(),
 	lists:map(
-		fun (RobotName) -> client_clients_sup:spawn_client(RobotName) end,
+		fun (RobotName) -> client_controllers_sup:spawn_client(RobotName) end,
 		RobotsList),
 	{noreply, State};
 

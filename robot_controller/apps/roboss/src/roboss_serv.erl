@@ -43,7 +43,7 @@ get_robots_list() ->
 %% Callbacks
 
 init(_Args) ->
-	io:format("roboss_serv~n"),
+	io:format("~s started~n", [?MODULE]),
 	
 	State = #state{},
 	self() ! start_control_driver,

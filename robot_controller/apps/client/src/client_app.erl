@@ -10,7 +10,16 @@
 %% ===================================================================
 
 start(_StartType, _StartArgs) ->
-    client_sup:start_link().
+	{ok, RobossNode} = application:get_env(roboss_node),
+	net_kernel:connect(RobossNode),
+	global:sync(),
+
+	case roboss_serv:is_alive() of
+		false ->  
+			{stop, "Roboss node not connected"};
+		true ->
+			client_sup:start_link()
+	end.    
 
 stop(_State) ->
     ok.

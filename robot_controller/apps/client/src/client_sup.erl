@@ -23,8 +23,8 @@ init(_Args) ->
 	MaxRestart = 1,
 	MaxTime = 10,
 	SupSpec = {
-		clients_sup,
-		{client_clients_sup, start_link, []},
+		controllers_sup,
+		{client_controllers_sup, start_link, []},
 		permanent,
 		1000,
 		worker,
