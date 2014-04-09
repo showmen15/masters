@@ -41,6 +41,15 @@ init(_Args) ->
 		[roboss_notifiers_sup]
 	},
 
+	PingersSupSpec = {
+		pingers_sup,
+		{roboss_pingers_sup, start_link, []},
+		temporary,
+		1000,
+		supervisor,
+		[roboss_pingers_sup]
+	},
+
 	ServSpec = {
 		serv,
 		{roboss_serv, start_link, []},
@@ -52,4 +61,5 @@ init(_Args) ->
 
 
 
-    {ok, {{one_for_all, MaxRestart, MaxTime}, [DriverSupSpec, NotifiersSupSpec, ServSpec]}}.
+    {ok, {{one_for_all, MaxRestart, MaxTime}, 
+    	[DriverSupSpec, NotifiersSupSpec, PingersSupSpec, ServSpec]}}.

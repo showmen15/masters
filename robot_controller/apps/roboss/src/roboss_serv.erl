@@ -123,10 +123,15 @@ spawn_robots_drivers(RobotsList) ->
 spawn_robot_driver(RobotName) ->
 	{ok, _Pid} = supervisor:start_child(roboss_drivers_sup, [RobotName]).
 
-spawn_notifiers(State, Pid) ->
+spawn_notifiers(State, ListenerPid) ->
 	RobotsList = dict:fetch_keys(State#state.robots_dict),
-	lists:map(
-		fun (RobotName) -> roboss_notifiers_sup:start_child(RobotName, Pid) end,
-		RobotsList).
+	NotifiersPids = lists:map(
+		fun (RobotName) -> 
+			{ok, NotifierPid} = roboss_notifiers_sup:start_child(RobotName, ListenerPid),
+			NotifierPid
+		end,
+		RobotsList),
 
-	
+	roboss_pingers_sup:start_child(ListenerPid, NotifiersPids).
+
+
