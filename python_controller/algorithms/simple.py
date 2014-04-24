@@ -41,12 +41,12 @@ class SimpleAlgorithm:
                     self._logger.info("time: %f, %d" % (t, myrobot.get_timestamp()))
                     self._logger.info("state: %s" % (states_dict.values(), ))
 
-                    vis_state = VisState(states_dict)
-                    self._controller.send_vis_update(vis_state)
-
                 if myrobot.get_timestamp() - self._start > 1000*1000*10:
                     self._start = myrobot.get_timestamp()
                     #self._dir *= -1
+
+                vis_state = VisState(self._robot_name, states_dict)
+                self._controller.send_vis_update(vis_state)
 
                 speed = self._dir * 5
 

@@ -9,6 +9,8 @@ import cPickle
 import sys
 import robot_model
 
+from vis_window import VisWindow
+
 import signal
 signal.signal(signal.SIGINT, signal.SIG_DFL)
 
@@ -38,8 +40,15 @@ class RobotVisServer(QUdpSocket):
     def handle_vis_state(self, vis_state):
         robot_name = vis_state.get_robot_name()
 
+        vis_window = None
+
         if robot_name in self._windows_dict:
-            pass
+            vis_window = self._windows_dict[robot_name]
+        else:
+            vis_window = VisWindow(robot_name)
+            self._windows_dict[robot_name] = vis_window
+
+        vis_window.update_state(vis_state)
 
 
 def main():
