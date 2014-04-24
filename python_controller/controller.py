@@ -8,10 +8,10 @@ import logging
 import logging.config
 import client_pb2
 import traceback
-from state import State
+from robot_model import State
 from algorithms.simple import SimpleAlgorithm
 from erl_port import ErlangPort
-
+from robot_vis.client import RobotVisClient
 
 class Controller:
 
@@ -21,6 +21,8 @@ class Controller:
 
         self._port = ErlangPort(self._logger)
         self._algorithm = algorithm(self, robot_name)
+
+        self._vis_client = RobotVisClient("127.0.0.1", 9010)
 
         self.send_ack()
 
@@ -78,10 +80,14 @@ class Controller:
         states_dict = {}
 
         for rs in state_msg.robotState:
-            state = State(rs)
+            state = State.from_full_state(rs)
             states_dict[state.get_robot_name()] = state
 
         return states_dict
+
+    def send_vis_update(self, vis_state):
+        self._vis_client.send_update(vis_state)
+
 
 def log_uncaught_exceptions(ex_cls, ex, tb):
     logging.critical(''.join(traceback.format_tb(tb)))

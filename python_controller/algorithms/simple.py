@@ -3,7 +3,7 @@ __author__ = 'michal'
 import logging
 import time
 from robot_command import RobotCommand
-
+from robot_model import VisState
 
 class SimpleAlgorithm:
 
@@ -36,11 +36,13 @@ class SimpleAlgorithm:
                 self._counter += 1
                 if self._counter == 250:
                     self._counter = 0
-                    t = (time.time() - self._before) / 4.0
+                    t = (time.time() - self._before) * 4.0
                     self._before = time.time()
                     self._logger.info("time: %f, %d" % (t, myrobot.get_timestamp()))
                     self._logger.info("state: %s" % (states_dict.values(), ))
 
+                    vis_state = VisState(states_dict)
+                    self._controller.send_vis_update(vis_state)
 
                 if myrobot.get_timestamp() - self._start > 1000*1000*10:
                     self._start = myrobot.get_timestamp()

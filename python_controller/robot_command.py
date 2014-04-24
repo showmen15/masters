@@ -1,7 +1,6 @@
 __author__ = 'michal'
 
 class RobotCommand:
-
     def __init__(self, front_left, front_right, rear_left, rear_right):
         self._front_left = front_left
         self._front_right = front_right
