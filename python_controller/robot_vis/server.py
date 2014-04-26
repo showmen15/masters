@@ -10,6 +10,7 @@ import sys
 import robot_model
 
 from vis_window import VisWindow
+from main_window import MainWindow
 
 import signal
 signal.signal(signal.SIGINT, signal.SIG_DFL)
@@ -20,6 +21,7 @@ class RobotVisServer(QUdpSocket):
 
     HOST = QHostAddress.Any
     PORT = 9010
+    REMOTE_PORT = 9015
 
     def __init__(self):
         super(RobotVisServer, self).__init__()
@@ -50,11 +52,15 @@ class RobotVisServer(QUdpSocket):
 
         vis_window.update_state(vis_state)
 
+    def send_message(self, message):
+        self.writeDatagram(message, QHostAddress.LocalHost, self.REMOTE_PORT)
+
 
 def main():
     app = QtGui.QApplication(sys.argv)
 
-    robot = RobotVisServer()
+    server = RobotVisServer()
+    main_window = MainWindow(server)
 
     sys.exit(app.exec_())
 

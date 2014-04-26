@@ -228,26 +228,17 @@ namespace RobossInterface {
         }
 
         private void HandleStartCmd() {
-            if (log.IsDebugEnabled) {
-                log.Debug("Got Start command");
-            }
-
+            log.Info("Got Start command");
             communicator.StartSimulation();
         }
 
         private void HandleStopCmd() {
-            if (log.IsDebugEnabled) {
-                log.Debug("Got Stop command");
-            }
-
+            log.Info("Got Stop command");
             communicator.StopSimulation();
         }
 
         private void HandleResetCmd() {
-            if (log.IsDebugEnabled) {
-                log.Debug("Got Reset command");
-            }
-
+            log.Info("Got Reset command");
             communicator.ResetSimulation();
         }
 

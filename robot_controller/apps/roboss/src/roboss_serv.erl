@@ -2,7 +2,7 @@
 
 -behaviour(gen_server).
 -export([start_link/0, stop/0, send_wheels_cmd/2, request_state/1, register_driver/2, is_alive/0, get_robots_list/0]).
--export([request_notifies/1]).
+-export([request_notifies/1, start_simulation/0, stop_simulation/0, reset_simulation/0]).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
 -include("../../include/records.hrl").
@@ -39,6 +39,16 @@ is_alive() ->
 
 get_robots_list() ->
 	gen_server:call({global, ?MODULE}, get_robots_list).
+
+start_simulation() ->
+	gen_server:cast({global, ?MODULE}, start_simulation).
+
+stop_simulation() ->
+	gen_server:cast({global, ?MODULE}, stop_simulation).
+
+reset_simulation() ->
+	gen_server:cast({global, ?MODULE}, reset_simulation).
+
 
 %% Callbacks
 
@@ -83,6 +93,18 @@ handle_cast({register_driver, {RobotName, Pid}}, #state{robots_dict = RobotsDict
 	NewRobotsDict = dict:store(RobotName, Pid, RobotsDict),
 
 	{noreply, State#state{robots_dict = NewRobotsDict}};
+
+handle_cast(start_simulation, State) ->
+	roboss_driver:start_simulation(),
+	{noreply, State};
+
+handle_cast(stop_simulation, State) ->
+	roboss_driver:stop_simulation(),
+	{noreply, State};
+
+handle_cast(reset_simulation, State) ->
+	roboss_driver:reset_simulation(),
+	{noreply, State};
 
 handle_cast(_Msg, State) ->
 	{noreply, State}.

@@ -6,7 +6,7 @@
 
 -export([start_link/1, start_link/0, stop/1]).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
--export([send_wheels_cmd/2, request_state/1, request_robots_list/1, start_simulation/1, stop_simulation/1, reset_simulation/1]).
+-export([send_wheels_cmd/2, request_state/1, request_robots_list/1, start_simulation/0, stop_simulation/0, reset_simulation/0]).
 
 -define(CONNECTION_TIMEOUT, 1000).
 
@@ -19,7 +19,7 @@ start_link(RobotName) ->
 	gen_server:start_link(?MODULE, RobotName, []).
 
 start_link() -> 
-	gen_server:start_link(?MODULE, undefined, []).
+	gen_server:start_link({local, ?MODULE}, ?MODULE, undefined, []).
 
 stop(Pid) -> 
 	gen_server:call(Pid, stop).
@@ -33,14 +33,14 @@ request_state(Pid) ->
 request_robots_list(Pid) ->
 	gen_server:call(Pid, request_robots_list).
 
-start_simulation(Pid) ->
-	gen_server:cast(Pid, start_simulation).
+start_simulation() ->
+	gen_server:cast(?MODULE, start_simulation).
 
-stop_simulation(Pid) ->
-	gen_server:cast(Pid, stop_simulation).
+stop_simulation() ->
+	gen_server:cast(?MODULE, stop_simulation).
 
-reset_simulation(Pid) ->
-	gen_server:cast(Pid, reset_simulation).
+reset_simulation() ->
+	gen_server:cast(?MODULE, reset_simulation).
 
 %% gen_server callbacks
 init(RobotName) ->

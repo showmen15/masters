@@ -49,5 +49,14 @@ init(_Args) ->
 		[client_serv]
 	},
 
-    {ok, {{one_for_all, MaxRestart, MaxTime}, [SupSpec, StateManagerSpec, ServSpec]}}.
+	UdpServSpec = {
+		udp_serv,
+		{client_udp_serv, start_link, []},
+		permanent,
+		1000,
+		worker,
+		[client_udp_serv]
+	},
+
+    {ok, {{one_for_all, MaxRestart, MaxTime}, [SupSpec, StateManagerSpec, ServSpec, UdpServSpec]}}.
 
