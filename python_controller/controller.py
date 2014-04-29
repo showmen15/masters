@@ -8,6 +8,7 @@ import logging
 import logging.config
 import client_pb2
 import traceback
+import cPickle
 from robot_model import State
 from algorithms.simple import SimpleAlgorithm
 from erl_port import ErlangPort
@@ -15,12 +16,18 @@ from robot_vis.client import RobotVisClient
 
 class Controller:
 
+    SAVE_SAMPLES = 20
+
     def __init__(self, robot_name, algorithm):
         self._logger = logging.getLogger(robot_name)
         self._logger.info("Controller started")
 
         self._port = ErlangPort(self._logger)
         self._algorithm = algorithm(self, robot_name)
+        self._robot_name = robot_name
+        self._samples = []
+        self._samples_counter = self.SAVE_SAMPLES
+        self._samples_from_file = False
 
         self._vis_client = RobotVisClient("127.0.0.1", 9010)
 
@@ -35,6 +42,9 @@ class Controller:
         self._algorithm.loop()
 
     def send_robot_command(self, robot_command):
+        if self._samples_from_file:
+            return
+
         cmd_msg = client_pb2.CommandMessage()
         cmd_msg.type = client_pb2.CommandMessage.ROBOT_COMMAND
         rc = cmd_msg.robotCommand
@@ -50,6 +60,8 @@ class Controller:
         self._port.send_msg (cmd_msg.SerializeToString())
 
     def send_request_state(self):
+        if self._samples_from_file:
+            return
 
         if self._logger.isEnabledFor('DEBUG'):
             self._logger.debug("Sending RequestState")
@@ -74,24 +86,52 @@ class Controller:
             sys.exit(1)
 
     def request_states(self):
-        self.send_request_state()
-        state_msg = self.receive_state_msg()
+        states_dict = None
 
-        states_dict = {}
+        if self._samples_from_file:
+            if self._samples_counter == len(self._samples):
+                sys.exit(0)
 
-        for rs in state_msg.robotState:
-            state = State.from_full_state(rs)
-            states_dict[state.get_robot_name()] = state
+            states_dict = self._samples[self._samples_counter]
+            self._samples_counter += 1
+        else:
+            self.send_request_state()
+            state_msg = self.receive_state_msg()
+
+            states_dict = {}
+
+            for rs in state_msg.robotState:
+                state = State.from_full_state(rs)
+                states_dict[state.get_robot_name()] = state
+
+            if self._samples_counter > 0:
+                self._save_sample(states_dict)
 
         return states_dict
 
     def send_vis_update(self, vis_state):
         self._vis_client.send_update(vis_state)
 
+    def _save_sample(self, sample):
+        self._samples.append(sample)
+
+        self._samples_counter -= 1
+        if self._samples_counter == 0:
+            f = open("/tmp/%s.samples" % (self._robot_name, ), 'w')
+            cPickle.dump(self._samples, f)
+            f.close()
+
+    def load_samples(self, filename):
+        self._samples_from_file = True
+        self._samples_counter = 0
+
+        f = open(filename, 'r')
+        self._samples = cPickle.load(f)
+        f.close()
+
 
 def log_uncaught_exceptions(ex_cls, ex, tb):
-    logging.critical(''.join(traceback.format_tb(tb)))
-    logging.critical('{0}: {1}'.format(ex_cls, ex))
+    logging.critical('{0}: {1}'.format(ex_cls, ex) + "\n" + "".join(traceback.format_tb(tb)))
 
 if __name__ == "__main__":
     sys.excepthook = log_uncaught_exceptions
@@ -99,13 +139,16 @@ if __name__ == "__main__":
     logging.config.fileConfig('log.config')
     logger = logging.getLogger("main")
 
-    if len(sys.argv) != 2:
+    if len(sys.argv) not in [2, 3]:
         logger.fatal("Wrong number of arguments. Exiting.")
         sys.exit(0)
 
     robot_name = sys.argv[1]
 
     controller = Controller(robot_name, SimpleAlgorithm)
+    if len(sys.argv) == 3:
+        controller.load_samples(sys.argv[2])
+
     controller.loop()
 
 

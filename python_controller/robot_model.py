@@ -44,9 +44,30 @@ class VisState:
     def __init__(self, robot_name, states_dict):
         self._robot_name = robot_name
         self._states_dict = states_dict
+        self._target = None
+        self._variables = {}
+        self._circles_dict = None
 
     def get_states_dict(self):
         return self._states_dict
 
     def get_robot_name(self):
         return self._robot_name
+
+    def set_target(self, target):
+        self._target = target
+
+    def get_target(self):
+        return self._target
+
+    def add_variable(self, name, value):
+        self._variables[name] = value
+
+    def get_variables(self):
+        return self._variables
+
+    def set_circles(self, circles):
+        self._circles_dict = circles
+
+    def get_circles_dict(self):
+        return self._circles_dict
