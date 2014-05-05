@@ -29,6 +29,7 @@ class SimpleAlgorithm:
 
     CIRCLES_DELTA = 1.0
     CIRCLES_NUM = 10
+    CIRCLES_RADIUS = 0.25
 
     def __init__(self, controller, robot_name):
         self._logger = logging.getLogger(robot_name)
@@ -153,6 +154,10 @@ class SimpleAlgorithm:
         self._controller.send_robot_command(RobotCommand(-speed, speed, -speed, speed))
 
     def _navigate(self):
+        if self._find_intersections():
+            self._send_stop_command()
+            return
+
         dist = self._target_distance()
         if dist < 0.05:
             self._state = AlgorithmState.obtain_new_target
@@ -173,6 +178,9 @@ class SimpleAlgorithm:
 
         self._controller.send_robot_command(
             RobotCommand(speed - correction, speed + correction, speed - correction, speed + correction))
+
+    def _send_stop_command(self):
+        self._controller.send_robot_command(RobotCommand(0, 0, 0, 0))
 
     def _target_distance(self):
         assert self._target is not None
@@ -228,6 +236,10 @@ class SimpleAlgorithm:
 
         return math.atan2(x, y)
 
+    @staticmethod
+    def _get_ff(robot_name):
+        return int(robot_name[5:])
+
     def _generate_circles(self):
         self._circles_dict = {}
 
@@ -241,4 +253,29 @@ class SimpleAlgorithm:
 
             circles = [(x + dx * i, y + dy * i) for i in range(1, self.CIRCLES_NUM + 1)]
             self._circles_dict[robot_name] = circles
+
+
+    def _find_intersections(self):
+        assert self._robot_name in self._circles_dict
+
+        my_circles = self._circles_dict[self._robot_name]
+        my_ff = SimpleAlgorithm._get_ff(self._robot_name)
+
+        for (robot_name, circles) in self._circles_dict.items():
+            if self._robot_name == robot_name:
+                continue
+
+            if SimpleAlgorithm._get_ff(robot_name) < my_ff:
+                continue
+
+            assert len(my_circles) == self.CIRCLES_NUM and len(circles) == self.CIRCLES_NUM
+            for i in range(self.CIRCLES_NUM):
+                (mx, my) = my_circles[i]
+                (ox, oy) = circles[i]
+
+                if SimpleAlgorithm._distance(mx, my, ox, oy) <= self.CIRCLES_RADIUS:
+                    return True
+
+        return False
+
 
