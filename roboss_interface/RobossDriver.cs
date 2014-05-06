@@ -239,6 +239,7 @@ namespace RobossInterface {
 
         private void HandleResetCmd() {
             log.Info("Got Reset command");
+            communicator.StopSimulation();
             communicator.ResetSimulation();
         }
 

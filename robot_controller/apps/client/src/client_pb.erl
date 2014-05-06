@@ -33,7 +33,7 @@
 -record(robotfullstate,
 	{robotname, x, y, theta, timestamp}).
 
--record(statemessage, {robotstate}).
+-record(statemessage, {robotstate, reset}).
 
 encode([]) -> [];
 encode(Records) when is_list(Records) ->
@@ -118,7 +118,10 @@ delimited_encode(Records) ->
 iolist(statemessage, Record) ->
     [pack(1, repeated,
 	  with_default(Record#statemessage.robotstate, none),
-	  robotfullstate, [])];
+	  robotfullstate, []),
+     pack(2, optional,
+	  with_default(Record#statemessage.reset, none), bool,
+	  [])];
 iolist(robotfullstate, Record) ->
     [pack(1, required,
 	  with_default(Record#robotfullstate.robotname, none),
@@ -262,8 +265,8 @@ delimited_decode(Type, Bytes, Acc) ->
 
 decode(enummsg_values, 1) -> value1;
 decode(statemessage, Bytes) when is_binary(Bytes) ->
-    Types = [{1, robotstate, robotfullstate,
-	      [is_record, repeated]}],
+    Types = [{2, reset, bool, []},
+	     {1, robotstate, robotfullstate, [is_record, repeated]}],
     Defaults = [{1, robotstate, []}],
     Decoded = decode(Bytes, Types, Defaults),
     to_record(statemessage, Decoded);

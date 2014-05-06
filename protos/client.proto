@@ -1,5 +1,6 @@
 message StateMessage {
-	repeated RobotFullState robotState = 1;
+	repeated RobotFullState robotState = 1;	
+	optional bool reset = 2; 
 }
 
 message RobotFullState {

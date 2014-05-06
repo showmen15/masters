@@ -94,11 +94,17 @@ class Controller:
 
             states_dict = self._samples[self._samples_counter]
             self._samples_counter += 1
+            if self._samples_counter == 20:
+                self._algorithm.reset()
+
         else:
             self.send_request_state()
             state_msg = self.receive_state_msg()
 
             states_dict = {}
+
+            if state_msg.reset:
+                self._algorithm.reset()
 
             for rs in state_msg.robotState:
                 state = State.from_full_state(rs)

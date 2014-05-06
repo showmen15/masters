@@ -42,7 +42,26 @@ handle_cast(_Msg, State) ->
 	{noreply, State}.
 
 handle_info({notification, RobotName, RobotState}, #state{robots_dict = Dict} = State) ->
-	NewDict = dict:store(RobotName, RobotState, Dict),
+
+	DictToStore = case dict:find(RobotName, Dict) of
+		{ok, OldState} ->
+			OldTimestamp = OldState#robot_state.timestamp,
+			NewTimestamp = RobotState#robot_state.timestamp,
+
+			if
+				NewTimestamp < OldTimestamp ->
+					io:format("state_manager: reset~n"),
+					client_controllers_sup:set_reset(),
+					dict:new();
+				true ->
+					Dict
+			end;
+
+		error ->
+			Dict
+	end,
+
+	NewDict = dict:store(RobotName, RobotState, DictToStore),
 	{noreply, State#state{robots_dict = NewDict}};
 
 handle_info(Info, State) ->

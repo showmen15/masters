@@ -13,7 +13,7 @@ from google.protobuf import descriptor_pb2
 DESCRIPTOR = _descriptor.FileDescriptor(
   name='client.proto',
   package='',
-  serialized_pb='\n\x0c\x63lient.proto\"3\n\x0cStateMessage\x12#\n\nrobotState\x18\x01 \x03(\x0b\x32\x0f.RobotFullState\"[\n\x0eRobotFullState\x12\x11\n\trobotName\x18\x01 \x02(\t\x12\t\n\x01x\x18\x02 \x02(\x01\x12\t\n\x01y\x18\x03 \x02(\x01\x12\r\n\x05theta\x18\x04 \x02(\x01\x12\x11\n\ttimestamp\x18\x05 \x02(\x03\"!\n\x0cSetupMessage\x12\x11\n\trobotName\x18\x01 \x02(\t\"\x05\n\x03\x41\x63k\"\x87\x01\n\x0e\x43ommandMessage\x12\"\n\x04type\x18\x01 \x02(\x0e\x32\x14.CommandMessage.Type\x12#\n\x0crobotCommand\x18\x02 \x01(\x0b\x32\r.RobotCommand\",\n\x04Type\x12\x11\n\rREQUEST_STATE\x10\x01\x12\x11\n\rROBOT_COMMAND\x10\x02\"Z\n\x0cRobotCommand\x12\x11\n\tfrontLeft\x18\x01 \x02(\x01\x12\x12\n\nfrontRight\x18\x02 \x02(\x01\x12\x10\n\x08rearLeft\x18\x03 \x02(\x01\x12\x11\n\trearRight\x18\x04 \x02(\x01')
+  serialized_pb='\n\x0c\x63lient.proto\"B\n\x0cStateMessage\x12#\n\nrobotState\x18\x01 \x03(\x0b\x32\x0f.RobotFullState\x12\r\n\x05reset\x18\x02 \x01(\x08\"[\n\x0eRobotFullState\x12\x11\n\trobotName\x18\x01 \x02(\t\x12\t\n\x01x\x18\x02 \x02(\x01\x12\t\n\x01y\x18\x03 \x02(\x01\x12\r\n\x05theta\x18\x04 \x02(\x01\x12\x11\n\ttimestamp\x18\x05 \x02(\x03\"!\n\x0cSetupMessage\x12\x11\n\trobotName\x18\x01 \x02(\t\"\x05\n\x03\x41\x63k\"\x87\x01\n\x0e\x43ommandMessage\x12\"\n\x04type\x18\x01 \x02(\x0e\x32\x14.CommandMessage.Type\x12#\n\x0crobotCommand\x18\x02 \x01(\x0b\x32\r.RobotCommand\",\n\x04Type\x12\x11\n\rREQUEST_STATE\x10\x01\x12\x11\n\rROBOT_COMMAND\x10\x02\"Z\n\x0cRobotCommand\x12\x11\n\tfrontLeft\x18\x01 \x02(\x01\x12\x12\n\nfrontRight\x18\x02 \x02(\x01\x12\x10\n\x08rearLeft\x18\x03 \x02(\x01\x12\x11\n\trearRight\x18\x04 \x02(\x01')
 
 
 
@@ -34,8 +34,8 @@ _COMMANDMESSAGE_TYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=296,
-  serialized_end=340,
+  serialized_start=311,
+  serialized_end=355,
 )
 
 
@@ -53,6 +53,13 @@ _STATEMESSAGE = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
+    _descriptor.FieldDescriptor(
+      name='reset', full_name='StateMessage.reset', index=1,
+      number=2, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
   ],
   extensions=[
   ],
@@ -63,7 +70,7 @@ _STATEMESSAGE = _descriptor.Descriptor(
   is_extendable=False,
   extension_ranges=[],
   serialized_start=16,
-  serialized_end=67,
+  serialized_end=82,
 )
 
 
@@ -118,8 +125,8 @@ _ROBOTFULLSTATE = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=69,
-  serialized_end=160,
+  serialized_start=84,
+  serialized_end=175,
 )
 
 
@@ -146,8 +153,8 @@ _SETUPMESSAGE = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=162,
-  serialized_end=195,
+  serialized_start=177,
+  serialized_end=210,
 )
 
 
@@ -167,8 +174,8 @@ _ACK = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=197,
-  serialized_end=202,
+  serialized_start=212,
+  serialized_end=217,
 )
 
 
@@ -203,8 +210,8 @@ _COMMANDMESSAGE = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=205,
-  serialized_end=340,
+  serialized_start=220,
+  serialized_end=355,
 )
 
 
@@ -252,8 +259,8 @@ _ROBOTCOMMAND = _descriptor.Descriptor(
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=342,
-  serialized_end=432,
+  serialized_start=357,
+  serialized_end=447,
 )
 
 _STATEMESSAGE.fields_by_name['robotState'].message_type = _ROBOTFULLSTATE

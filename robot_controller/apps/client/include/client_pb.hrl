@@ -1,7 +1,8 @@
 -ifndef(STATEMESSAGE_PB_H).
 -define(STATEMESSAGE_PB_H, true).
 -record(statemessage, {
-    robotstate = []
+    robotstate = [],
+    reset
 }).
 -endif.
 

@@ -16,7 +16,7 @@ class AlgorithmState(Enum):
 class SimpleAlgorithm:
 
     INTERVAL = 0.02 #s
-    TIME_MEASURE_STEPS = 50
+    TIME_MEASURE_STEPS = 50*5 # 5s
     MAX_SPEED = 10
 
     MIN_X = -5.0
@@ -63,11 +63,23 @@ class SimpleAlgorithm:
             self._step_start = time.time()
 
             self._update_states()
-            self._calculates_movements()
-            self._generate_circles()
-            self._make_action()
+            if self._my_robot is not None:
+                self._calculates_movements()
+                self._generate_circles()
+                self._make_action()
 
             self._sleep_and_measure()
+
+    def reset(self):
+        self._logger.info("Reset")
+
+        self._states_dict.clear()
+        self._prev_states_dict.clear()
+        self._my_robot = None
+        self._movements.clear()
+        self._circles_dict = None
+        self._target = None
+        self._state = AlgorithmState.obtain_new_target
 
     def _update_states(self):
         new_states = self._controller.request_states()
@@ -80,26 +92,25 @@ class SimpleAlgorithm:
                     self._states_dict[robot_name] = new_state
             else:
                 self._states_dict[robot_name] = new_state
+                if robot_name in self._prev_states_dict:
+                    del self._prev_states_dict[robot_name]
 
-        assert self._robot_name in self._states_dict
-        self._my_robot = self._states_dict[self._robot_name]
-
-
+        if self._robot_name in self._states_dict:
+            self._my_robot = self._states_dict[self._robot_name]
 
     def _make_action(self):
         while True:
             if self._state == AlgorithmState.obtain_new_target:
                 self._obtain_new_target()
-                self._state = AlgorithmState.rotate
+                self._state = AlgorithmState.navigate
             elif self._state == AlgorithmState.rotate:
                 self._rotate()
                 break
             elif self._state == AlgorithmState.navigate:
                 self._navigate()
-                break;
+                break
 
         self._send_vis_state()
-
 
     def _sleep_and_measure(self):
         now = time.time()
@@ -170,7 +181,7 @@ class SimpleAlgorithm:
         self._a = angle
         p = angle/math.pi
 
-        correction = self.MAX_SPEED * p
+        correction = self.MAX_SPEED * p * 2.0
         speed = self.MAX_SPEED
 
         if dist < 1.0:
@@ -236,6 +247,7 @@ class SimpleAlgorithm:
 
         return math.atan2(x, y)
 
+
     @staticmethod
     def _get_ff(robot_name):
         return int(robot_name[5:])
@@ -254,9 +266,9 @@ class SimpleAlgorithm:
             circles = [(x + dx * i, y + dy * i) for i in range(1, self.CIRCLES_NUM + 1)]
             self._circles_dict[robot_name] = circles
 
-
     def _find_intersections(self):
-        assert self._robot_name in self._circles_dict
+        if self._robot_name not in self._circles_dict:
+            return False
 
         my_circles = self._circles_dict[self._robot_name]
         my_ff = SimpleAlgorithm._get_ff(self._robot_name)
@@ -277,5 +289,3 @@ class SimpleAlgorithm:
                     return True
 
         return False
-
-
