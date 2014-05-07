@@ -13,6 +13,7 @@ namespace RobossInterface {
     class RobossDriver {
         private static readonly string ROBOT_TYPE = "RobotCar";
         private static readonly int BUFFER_SIZE = 128;
+        private static readonly double WHEEL_RADIUS = 0.0603;
 
         private static readonly ILog log = LogManager.GetLogger(typeof(RobossDriver));
 
@@ -162,10 +163,10 @@ namespace RobossInterface {
                 return;
             }
 
-            robot.joints[0].motorDesiredVelocity = wheelsCmd.frontLeft;
-            robot.joints[1].motorDesiredVelocity = wheelsCmd.frontRight;
-            robot.joints[2].motorDesiredVelocity = wheelsCmd.rearLeft;
-            robot.joints[3].motorDesiredVelocity = wheelsCmd.rearRight;
+            robot.joints[0].motorDesiredVelocity = wheelsCmd.frontLeft / WHEEL_RADIUS;
+            robot.joints[1].motorDesiredVelocity = wheelsCmd.frontRight / WHEEL_RADIUS;
+            robot.joints[2].motorDesiredVelocity = wheelsCmd.rearLeft / WHEEL_RADIUS;
+            robot.joints[3].motorDesiredVelocity = wheelsCmd.rearRight / WHEEL_RADIUS;
 
             if (robot.Send() < 0) {
                 log.Error("Error in sending command to robot");

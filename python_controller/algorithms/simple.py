@@ -17,7 +17,7 @@ class SimpleAlgorithm:
 
     INTERVAL = 0.02 #s
     TIME_MEASURE_STEPS = 50*5 # 5s
-    MAX_SPEED = 10
+    MAX_SPEED = 0.5
 
     MIN_X = -5.0
     MIN_Y = -5.0
@@ -25,11 +25,11 @@ class SimpleAlgorithm:
     WORLD_WIDTH = 10.0
     WORLD_HEIGHT = 10.0
 
-    WALL_OFFSET = 0.5
+    WALL_OFFSET = 1.0
 
-    CIRCLES_DELTA = 1.0
+    CIRCLES_DELTA = 0.5
     CIRCLES_NUM = 10
-    CIRCLES_RADIUS = 0.25
+    CIRCLES_RADIUS = 0.5
 
     def __init__(self, controller, robot_name):
         self._logger = logging.getLogger(robot_name)
@@ -165,9 +165,6 @@ class SimpleAlgorithm:
         self._controller.send_robot_command(RobotCommand(-speed, speed, -speed, speed))
 
     def _navigate(self):
-        if self._find_intersections():
-            self._send_stop_command()
-            return
 
         dist = self._target_distance()
         if dist < 0.05:
@@ -186,6 +183,11 @@ class SimpleAlgorithm:
 
         if dist < 1.0:
             speed *= dist
+
+        if self._find_intersections(speed):
+            self._send_stop_command()
+            return
+            #pass
 
         self._controller.send_robot_command(
             RobotCommand(speed - correction, speed + correction, speed - correction, speed + correction))
@@ -225,12 +227,10 @@ class SimpleAlgorithm:
                                                      prev_state.get_x(), prev_state.get_y())
 
                 speed = distance / delta
-                angle = SimpleAlgorithm._angle(prev_state.get_x(), prev_state.get_y(),
-                                               act_state.get_x(), act_state.get_y())
 
                 act_point = (act_state.get_x(), act_state.get_y())
 
-                self._movements[robot_name] = {'speed': speed, 'distance': distance, 'angle': angle,
+                self._movements[robot_name] = {'speed': speed, 'distance': distance, 'angle': act_state.get_theta(),
                                                'act_point': act_point}
 
     @staticmethod
@@ -256,21 +256,22 @@ class SimpleAlgorithm:
         self._circles_dict = {}
 
         for (robot_name, movements) in self._movements.items():
-            z = movements['speed'] * self.CIRCLES_DELTA
-            (x, y) = movements['act_point']
-            angle = movements['angle']
+            if self._robot_name == robot_name:
+                continue
 
-            dx = z * math.sin(angle)
-            dy = z * math.cos(angle)
-
-            circles = [(x + dx * i, y + dy * i) for i in range(1, self.CIRCLES_NUM + 1)]
+            circles = self._generate_circles_for_one(movements['act_point'], movements['speed'], movements['angle'])
             self._circles_dict[robot_name] = circles
 
-    def _find_intersections(self):
-        if self._robot_name not in self._circles_dict:
+
+
+    def _find_intersections(self, desired_speed):
+        if self._robot_name not in self._movements:
             return False
 
-        my_circles = self._circles_dict[self._robot_name]
+        my_movements = self._movements[self._robot_name]
+        my_circles = self._generate_circles_for_one(my_movements['act_point'], desired_speed, my_movements['angle'])
+        self._circles_dict[self._robot_name] = my_circles
+
         my_ff = SimpleAlgorithm._get_ff(self._robot_name)
 
         for (robot_name, circles) in self._circles_dict.items():
@@ -289,3 +290,13 @@ class SimpleAlgorithm:
                     return True
 
         return False
+
+    def _generate_circles_for_one(self, act_point, speed, angle):
+        z = speed * self.CIRCLES_DELTA
+        (x, y) = act_point
+
+        dx = z * math.sin(angle)
+        dy = z * math.cos(angle)
+
+        circles = [(x + dx * i, y + dy * i) for i in range(self.CIRCLES_NUM)]
+        return circles
