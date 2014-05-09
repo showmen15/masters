@@ -5,6 +5,7 @@ using System.Text;
 using RoBOSSCommunicator;
 using log4net;
 using System.IO;
+using System.Diagnostics;
 using ProtoBuf;
 using roboss;
 
@@ -27,12 +28,20 @@ namespace RobossInterface {
 
         private Communicator communicator;
 
+        private double prevTimestamp = 0;
+
+        private Stopwatch stopwatch;
+
         public RobossDriver(string hostname, string port, string robotName) {
             this.hostname = hostname;
             this.port = port;
             this.robotName = robotName;
 
             erlComm = new ErlComm();
+            if (log.IsDebugEnabled) {
+                stopwatch = new Stopwatch();
+                stopwatch.Start();
+            }
         }
 
         public void Connect() {
@@ -199,8 +208,11 @@ namespace RobossInterface {
             }
 
             if (log.IsDebugEnabled) {
-                log.Debug(String.Format("Sending RobotState, x: {0}, y: {1}, theta: {2}, timestamp: {3}",
-                    robotState.x, robotState.y, robotState.theta, robotState.timestamp));
+                log.Debug(String.Format("Sending RobotState, x: {0}, y: {1}, theta: {2}, timestamp: {3}, delta: {4}, real: {5}",
+                    robotState.x, robotState.y, robotState.theta, robotState.timestamp, robotState.timestamp - prevTimestamp, stopwatch.ElapsedMilliseconds));
+
+                stopwatch.Restart();
+                prevTimestamp = robotState.timestamp;
             }
 
             SendMessage(robotState);

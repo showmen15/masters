@@ -16,7 +16,7 @@ from robot_vis.client import RobotVisClient
 
 class Controller:
 
-    SAVE_SAMPLES = 200
+    SAVE_SAMPLES = 50
 
     def __init__(self, robot_name, algorithm):
         self._logger = logging.getLogger(robot_name)
@@ -155,6 +155,8 @@ if __name__ == "__main__":
     if len(sys.argv) == 3:
         controller.load_samples(sys.argv[2])
 
+    #import cProfile
+    #cProfile.run('controller.loop()', '/tmp/profile.out')
     controller.loop()
 
 

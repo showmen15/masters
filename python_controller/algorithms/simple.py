@@ -7,6 +7,7 @@ import math
 from robot_command import RobotCommand
 from robot_model import VisState
 from enum import Enum
+from kalman.location_kalman import LocationKalman
 
 class AlgorithmState(Enum):
     obtain_new_target = 1
@@ -50,6 +51,7 @@ class SimpleAlgorithm:
         self._prev_states_dict = {}
         self._movements = {}
         self._circles_dict = None
+        self._kf_dict = {}
 
         self._a = None
 
@@ -80,6 +82,7 @@ class SimpleAlgorithm:
         self._circles_dict = None
         self._target = None
         self._state = AlgorithmState.obtain_new_target
+        self._kf_dict = {}
 
     def _update_states(self):
         new_states = self._controller.request_states()
@@ -87,11 +90,18 @@ class SimpleAlgorithm:
         for (robot_name, new_state) in new_states.items():
             if robot_name in self._states_dict:
                 old_state = self._states_dict[robot_name]
+
                 if new_state.get_timestamp() > old_state.get_timestamp():
                     self._prev_states_dict[robot_name] = old_state
                     self._states_dict[robot_name] = new_state
+                    self._kf_dict[robot_name].step(new_state.get_x(), new_state.get_y())
+                else:
+                    self._kf_dict[robot_name].missing_step()
+
             else:
                 self._states_dict[robot_name] = new_state
+                self._kf_dict[robot_name] = LocationKalman(new_state.get_x(), new_state.get_y(),
+                                               self.INTERVAL)
                 if robot_name in self._prev_states_dict:
                     del self._prev_states_dict[robot_name]
 
@@ -220,17 +230,23 @@ class SimpleAlgorithm:
             if robot_name in self._prev_states_dict:
                 prev_state = self._prev_states_dict[robot_name]
 
-                delta = (act_state.get_timestamp() - prev_state.get_timestamp()) / (1000.0 * 1000.0)
-                assert delta > 0.0
+                (x, y, vx, vy) = self._kf_dict[robot_name].get_means()
 
-                distance = SimpleAlgorithm._distance(act_state.get_x(), act_state.get_y(),
-                                                     prev_state.get_x(), prev_state.get_y())
+                #delta = (act_state.get_timestamp() - prev_state.get_timestamp()) / (1000.0 * 1000.0)
+                #assert delta > 0.0
 
-                speed = distance / delta
+                #distance = SimpleAlgorithm._distance(act_state.get_x(), act_state.get_y(),
+                #                                     prev_state.get_x(), prev_state.get_y())
 
-                act_point = (act_state.get_x(), act_state.get_y())
 
-                self._movements[robot_name] = {'speed': speed, 'distance': distance, 'angle': act_state.get_theta(),
+                #speed = distance / delta
+                #print delta, speed, distance
+                #print act_state.get_timestamp(), act_state.get_timestamp() - prev_state.get_timestamp()
+
+                speed = math.sqrt(vx*vx + vy*vy)
+                act_point = (x, y)
+
+                self._movements[robot_name] = {'speed': speed, 'angle': act_state.get_theta(),
                                                'act_point': act_point}
 
     @staticmethod
@@ -247,7 +263,6 @@ class SimpleAlgorithm:
 
         return math.atan2(x, y)
 
-
     @staticmethod
     def _get_ff(robot_name):
         return int(robot_name[5:])
@@ -261,8 +276,6 @@ class SimpleAlgorithm:
 
             circles = self._generate_circles_for_one(movements['act_point'], movements['speed'], movements['angle'])
             self._circles_dict[robot_name] = circles
-
-
 
     def _find_intersections(self, desired_speed):
         if self._robot_name not in self._movements:
