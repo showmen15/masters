@@ -6,6 +6,7 @@ import random
 import math
 from robot_command import RobotCommand
 from robot_model import VisState
+from utils.time_utils import TimeUtil
 from enum import Enum
 from kalman.location_kalman import LocationKalman
 
@@ -17,7 +18,7 @@ class AlgorithmState(Enum):
 class SimpleAlgorithm:
 
     INTERVAL = 0.02 #s
-    TIME_MEASURE_STEPS = 50*5 # 5s
+    MEASURE_STEPS = 50*5 # 5s
     MAX_SPEED = 0.5
 
     MIN_X = -5.0
@@ -38,11 +39,7 @@ class SimpleAlgorithm:
 
         self._controller = controller
         self._robot_name = robot_name
-
-        self._steps_counter = 0
-        self._period_start = None
-        self._step_start = None
-        self._step_cumulative_time = 0.0
+        self._time_util = TimeUtil(self.INTERVAL, self.MEASURE_STEPS, self._logger)
 
         self._state = AlgorithmState.obtain_new_target
         self._target = None
@@ -60,10 +57,8 @@ class SimpleAlgorithm:
         return self._robot_name
 
     def loop(self):
-        self._period_start = time.time()
-
         while True:
-            self._step_start = time.time()
+            self._time_util.start_step()
 
             self._update_states()
             if self._my_robot is not None:
@@ -71,7 +66,7 @@ class SimpleAlgorithm:
                 self._generate_circles()
                 self._make_action()
 
-            self._sleep_and_measure()
+            self._time_util.start_sleep()
 
     def reset(self):
         self._logger.info("Reset")
@@ -134,27 +129,6 @@ class SimpleAlgorithm:
                 break
 
         self._send_vis_state()
-
-    def _sleep_and_measure(self):
-        now = time.time()
-
-        self._steps_counter += 1
-        if self._steps_counter == self.TIME_MEASURE_STEPS:
-            avg_period = (now - self._period_start) / float(self.TIME_MEASURE_STEPS) * 1000.0
-            avg_step = self._step_cumulative_time / float(self.TIME_MEASURE_STEPS) * 1000.0
-            self._step_cumulative_time = 0.0
-
-            self._logger.info("avg period: %f ms" % avg_period)
-            self._logger.info("avg step: %f ms" % avg_step)
-
-            self._steps_counter = 0
-            self._period_start = now
-
-        exec_time = now - self._step_start
-        self._step_cumulative_time += exec_time
-        time_diff = self.INTERVAL - exec_time
-        if time_diff > 0:
-            time.sleep(time_diff)
 
     def _send_vis_state(self):
         vis_state = VisState(self._robot_name, self._states_dict)

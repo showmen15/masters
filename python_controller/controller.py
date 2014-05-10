@@ -17,7 +17,7 @@ from robot_vis.client import RobotVisClient
 
 class Controller:
 
-    SAVE_SAMPLES = 500
+    SAVE_SAMPLES = 1000
 
     def __init__(self, robot_name, algorithm):
         self._logger = logging.getLogger(robot_name)
