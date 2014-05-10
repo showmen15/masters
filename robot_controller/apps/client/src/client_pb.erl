@@ -33,7 +33,7 @@
 -record(robotfullstate,
 	{robotname, x, y, theta, timestamp}).
 
--record(statemessage, {robotstate, reset}).
+-record(statemessage, {robotstate, event}).
 
 encode([]) -> [];
 encode(Records) when is_list(Records) ->
@@ -120,8 +120,8 @@ iolist(statemessage, Record) ->
 	  with_default(Record#statemessage.robotstate, none),
 	  robotfullstate, []),
      pack(2, optional,
-	  with_default(Record#statemessage.reset, none), bool,
-	  [])];
+	  with_default(Record#statemessage.event, none),
+	  statemessage_event, [])];
 iolist(robotfullstate, Record) ->
     [pack(1, required,
 	  with_default(Record#robotfullstate.robotname, none),
@@ -204,10 +204,16 @@ pack(FNum, _, Data, Type, _) when is_atom(Data) ->
     protobuffs:encode(FNum, enum_to_int(Type, Data), enum).
 
 enum_to_int(commandmessage_type, 'ROBOT_COMMAND') -> 2;
-enum_to_int(commandmessage_type, 'REQUEST_STATE') -> 1.
+enum_to_int(commandmessage_type, 'REQUEST_STATE') -> 1;
+enum_to_int(statemessage_event, 'RESET') -> 3;
+enum_to_int(statemessage_event, 'START') -> 2;
+enum_to_int(statemessage_event, 'STOP') -> 1.
 
 int_to_enum(commandmessage_type, 2) -> 'ROBOT_COMMAND';
 int_to_enum(commandmessage_type, 1) -> 'REQUEST_STATE';
+int_to_enum(statemessage_event, 3) -> 'RESET';
+int_to_enum(statemessage_event, 2) -> 'START';
+int_to_enum(statemessage_event, 1) -> 'STOP';
 int_to_enum(_, Val) -> Val.
 
 decode_robotcommand(Bytes) when is_binary(Bytes) ->
@@ -265,7 +271,7 @@ delimited_decode(Type, Bytes, Acc) ->
 
 decode(enummsg_values, 1) -> value1;
 decode(statemessage, Bytes) when is_binary(Bytes) ->
-    Types = [{2, reset, bool, []},
+    Types = [{2, event, statemessage_event, []},
 	     {1, robotstate, robotfullstate, [is_record, repeated]}],
     Defaults = [{1, robotstate, []}],
     Decoded = decode(Bytes, Types, Defaults),

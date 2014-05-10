@@ -1,9 +1,15 @@
 message StateMessage {
+	enum Event {
+		STOP = 1;
+		START = 2;
+		RESET = 3;
+	}
+
 	repeated RobotFullState robotState = 1;	
-	optional bool reset = 2; 
+	optional Event event = 2;	 
 }
 
-message RobotFullState {
+message RobotFullState {	
 	required string robotName = 1;
 	required double x = 2;
 	required double y = 3;

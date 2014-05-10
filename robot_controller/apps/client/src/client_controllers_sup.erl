@@ -3,7 +3,7 @@
 -behaviour(supervisor).
 
 %% API
--export([start_link/0, spawn_client/1, set_reset/0]).
+-export([start_link/0, spawn_client/1, set_event/1]).
 
 %% Supervisor callbacks
 -export([init/1]).
@@ -18,9 +18,9 @@ start_link() ->
 spawn_client(RobotName) ->
 	supervisor:start_child(?MODULE, [RobotName]).
 
-set_reset() ->
+set_event(Event) ->
 	Children = supervisor:which_children(?MODULE),
-	lists:map(fun ({_, Pid, _, _}) ->  client_controller:set_reset(Pid) end, Children).
+	lists:map(fun ({_, Pid, _, _}) ->  client_controller:set_event(Pid, Event) end, Children).
 
 %% ===================================================================
 %% Supervisor callbacks

@@ -9,6 +9,7 @@ import logging.config
 import client_pb2
 import traceback
 import cPickle
+import numpy
 from robot_model import State
 from algorithms.simple import SimpleAlgorithm
 from erl_port import ErlangPort
@@ -103,8 +104,13 @@ class Controller:
 
             states_dict = {}
 
-            if state_msg.reset:
-                self._algorithm.reset()
+            if state_msg.HasField('event'):
+                if state_msg.event == client_pb2.StateMessage.STOP:
+                    self._algorithm.stop()
+                elif state_msg.event == client_pb2.StateMessage.START:
+                    self._algorithm.start()
+                elif state_msg.event == client_pb2.StateMessage.RESET:
+                    self._algorithm.reset()
 
             for rs in state_msg.robotState:
                 state = State.from_full_state(rs)
@@ -139,11 +145,17 @@ class Controller:
 def log_uncaught_exceptions(ex_cls, ex, tb):
     logging.critical('{0}: {1}'.format(ex_cls, ex) + "\n" + "".join(traceback.format_tb(tb)))
 
+def log_numpy_errors(type, flag):
+    logging.error("numpy error: {0}, flag: {1}" % (type, flag))
+
 if __name__ == "__main__":
     sys.excepthook = log_uncaught_exceptions
 
     logging.config.fileConfig('log.config')
     logger = logging.getLogger("main")
+
+    numpy.seterrcall=log_numpy_errors
+    numpy.seterr(all='call')
 
     if len(sys.argv) not in [2, 3]:
         logger.fatal("Wrong number of arguments. Exiting.")

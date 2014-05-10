@@ -20,15 +20,17 @@ loop(Socket) ->
 
 handle_message("start") ->
 	io:format("Start simulation~n"),
-	roboss_serv:start_simulation();
+	roboss_serv:start_simulation(),
+	client_controllers_sup:set_event(start);
 
 handle_message("stop") ->
 	io:format("Stop simulation~n"),
-	roboss_serv:stop_simulation();
+	roboss_serv:stop_simulation(),
+	client_controllers_sup:set_event(stop);
 
 handle_message("reset") ->
 	io:format("Reset simulation~n"),
 	roboss_serv:reset_simulation();
-
+	
 handle_message(Msg) ->
 	io:format("Unrecognised UDP message: ~s~n", [Msg]).

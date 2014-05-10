@@ -2,7 +2,7 @@
 -define(STATEMESSAGE_PB_H, true).
 -record(statemessage, {
     robotstate = [],
-    reset
+    event
 }).
 -endif.
 

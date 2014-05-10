@@ -51,7 +51,7 @@ handle_info({notification, RobotName, RobotState}, #state{robots_dict = Dict} = 
 			if
 				NewTimestamp < OldTimestamp ->
 					io:format("state_manager: reset~n"),
-					client_controllers_sup:set_reset(),
+					client_controllers_sup:set_event(reset),
 					dict:new();
 				true ->
 					Dict

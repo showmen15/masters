@@ -52,6 +52,7 @@ class SimpleAlgorithm:
         self._movements = {}
         self._circles_dict = None
         self._kf_dict = {}
+        self._running = True
 
         self._a = None
 
@@ -83,9 +84,19 @@ class SimpleAlgorithm:
         self._target = None
         self._state = AlgorithmState.obtain_new_target
         self._kf_dict = {}
+        self._running = True
+
+    def start(self):
+        self._running = True
+
+    def stop(self):
+        self._running = False
 
     def _update_states(self):
         new_states = self._controller.request_states()
+
+        if not self._running:
+            return
 
         for (robot_name, new_state) in new_states.items():
             if robot_name in self._states_dict:

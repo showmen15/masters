@@ -4,7 +4,7 @@
 -include("include/client_pb.hrl").
 -include("../../include/records.hrl").
 
--export([start_link/1, stop/1, set_reset/1]).
+-export([start_link/1, stop/1, set_event/2]).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
 -define(CONNECTION_TIMEOUT, 1000).
@@ -12,7 +12,7 @@
 -record(state, {
 	port,
 	robot_name,
-	reset = false
+	event = undef
 	}).
 
 start_link(RobotName) -> 
@@ -22,8 +22,8 @@ start_link(RobotName) ->
 stop(Pid) -> 
 	gen_server:call(Pid, stop).
 
-set_reset(Pid) ->
-	gen_server:cast(Pid, set_reset).
+set_event(Pid, Event) ->
+	gen_server:cast(Pid, {set_event, Event}).
 
 %% gen_server callbacks
 init(RobotName) ->
@@ -55,8 +55,14 @@ handle_call(stop, _From, State) ->
 	{stop, normal, ok, State}.
 
 
-handle_cast(set_reset, State) ->
-	{noreply, State#state{reset = true}};
+handle_cast({set_event, start}, State) ->
+	{noreply, State#state{event = 'START'}};
+
+handle_cast({set_event, stop}, State) ->
+	{noreply, State#state{event = 'STOP'}};
+
+handle_cast({set_event, reset}, State) ->
+	{noreply, State#state{event = 'RESET'}};
 
 handle_cast(_Msg, State) ->
 	{noreply, State}.
@@ -66,7 +72,7 @@ handle_info({Port, {data, Data}}, State) when Port =:= State#state.port ->
 	NewState = case CmdMsg#commandmessage.type of
 		'REQUEST_STATE' ->
 			send_request_state_reply(State),
-			State#state{reset = false};
+			State#state{event = undef};
 
 		'ROBOT_COMMAND' ->
 			send_robot_command(State, CmdMsg#commandmessage.robotcommand),
@@ -81,7 +87,7 @@ handle_info({Port, {data, Data}}, State) when Port =:= State#state.port ->
 handle_info({'EXIT', _Port, Reason}, State) ->
     {stop, {port_terminated, Reason}, State};
 
-handle_info(Info, State) ->
+handle_info(Info, State) ->	
 	io:format("info: ~w ~n", [Info]),
 	{noreply, State}.
 
@@ -108,7 +114,14 @@ send_request_state_reply(State) ->
 
 	StatesList = lists:map(Fun, dict:to_list(RobotsStateDict)),
 
-	StateMsg = #statemessage{robotstate = StatesList, reset = State#state.reset},
+	StateMsg = case State#state.event of
+		undef -> 
+			#statemessage{robotstate = StatesList};
+
+		Event -> 
+			#statemessage{robotstate = StatesList, event = Event}
+	end,	
+
 	StateMsgEncoded = client_pb:encode_statemessage(StateMsg),
 	send_to_port(State, StateMsgEncoded).
 
