@@ -87,9 +87,11 @@ class SimpleAlgorithm:
         self._running = True
 
     def start(self):
+        self._logger.info("Start")
         self._running = True
 
     def stop(self):
+        self._logger.info("Stop")
         self._running = False
 
     def _update_states(self):
