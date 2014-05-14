@@ -9,17 +9,20 @@ from robot_model import VisState
 from utils.time_utils import TimeUtil
 from enum import Enum
 from kalman.location_kalman import LocationKalman
+from kalman.angle_kalman import AngleKalman
+
 
 class AlgorithmState(Enum):
     obtain_new_target = 1
     rotate = 2
     navigate = 3
 
-class SimpleAlgorithm:
 
+class SimpleAlgorithm:
     INTERVAL = 0.02 #s
-    MEASURE_STEPS = 50*5 # 5s
+    MEASURE_STEPS = 50 * 5 # 5s
     MAX_SPEED = 0.5
+    ANGLE_MEASURE_STEPS = 5
 
     MIN_X = -5.0
     MIN_Y = -5.0
@@ -49,9 +52,13 @@ class SimpleAlgorithm:
         self._movements = {}
         self._circles_dict = None
         self._kf_dict = {}
+        self._angle_kf_dict = {}
         self._running = True
 
+        #self._f = open("/tmp/%s.ang" % (self._robot_name, ), 'w')
+
         self._a = None
+        self._b = None
 
     def get_robot_name(self):
         return self._robot_name
@@ -79,6 +86,7 @@ class SimpleAlgorithm:
         self._target = None
         self._state = AlgorithmState.obtain_new_target
         self._kf_dict = {}
+        self._angle_kf_dict = {}
         self._running = True
 
     def start(self):
@@ -88,6 +96,7 @@ class SimpleAlgorithm:
     def stop(self):
         self._logger.info("Stop")
         self._running = False
+        #self._f.close()
 
     def _update_states(self):
         new_states = self._controller.request_states()
@@ -103,13 +112,20 @@ class SimpleAlgorithm:
                     self._prev_states_dict[robot_name] = old_state
                     self._states_dict[robot_name] = new_state
                     self._kf_dict[robot_name].step(new_state.get_x(), new_state.get_y())
+                    self._angle_kf_dict[robot_name].step(new_state.get_theta())
+
+                    if robot_name == self._robot_name:
+                        self._f.write("%f\n" % (new_state.get_theta(), ))
                 else:
                     self._kf_dict[robot_name].missing_step()
+                    self._angle_kf_dict[robot_name].missing_step()
 
             else:
                 self._states_dict[robot_name] = new_state
                 self._kf_dict[robot_name] = LocationKalman(new_state.get_x(), new_state.get_y(),
-                                               self.INTERVAL)
+                                                           self.INTERVAL)
+                self._angle_kf_dict[robot_name] = AngleKalman(new_state.get_theta(), self.INTERVAL)
+
                 if robot_name in self._prev_states_dict:
                     del self._prev_states_dict[robot_name]
 
@@ -135,6 +151,7 @@ class SimpleAlgorithm:
         vis_state.set_target(self._target)
         vis_state.set_circles(self._circles_dict)
         vis_state.add_variable("angle", self._a)
+        vis_state.add_variable("ang_speed", self._b)
 
         self._controller.send_vis_update(vis_state)
 
@@ -151,8 +168,7 @@ class SimpleAlgorithm:
 
     def _rotate(self):
         angle = self._my_robot.get_theta() - self._target_angle()
-        self._a = angle
-        p = angle/math.pi
+        p = angle / math.pi
 
         if abs(p) < 0.01:
             self._state = AlgorithmState.navigate
@@ -162,7 +178,6 @@ class SimpleAlgorithm:
         self._controller.send_robot_command(RobotCommand(-speed, speed, -speed, speed))
 
     def _navigate(self):
-
         dist = self._target_distance()
         if dist < 0.05:
             self._state = AlgorithmState.obtain_new_target
@@ -172,8 +187,7 @@ class SimpleAlgorithm:
         if abs(angle) > math.pi:
             angle -= math.copysign(2.0 * math.pi, angle)
 
-        self._a = angle
-        p = angle/math.pi
+        p = angle / math.pi
 
         correction = self.MAX_SPEED * p * 2.0
         speed = self.MAX_SPEED
@@ -217,23 +231,19 @@ class SimpleAlgorithm:
             if robot_name in self._prev_states_dict:
                 prev_state = self._prev_states_dict[robot_name]
 
+                angle = act_state.get_theta()
                 (x, y, vx, vy) = self._kf_dict[robot_name].get_means()
+                (a, o, e) = self._angle_kf_dict[robot_name].get_means()
 
-                #delta = (act_state.get_timestamp() - prev_state.get_timestamp()) / (1000.0 * 1000.0)
-                #assert delta > 0.0
+                if robot_name == self._robot_name:
+                    self._a = a
+                    self._b = round(o, 2)
+                    #self._f.write("%f %f\n" % (a, o))
 
-                #distance = SimpleAlgorithm._distance(act_state.get_x(), act_state.get_y(),
-                #                                     prev_state.get_x(), prev_state.get_y())
-
-
-                #speed = distance / delta
-                #print delta, speed, distance
-                #print act_state.get_timestamp(), act_state.get_timestamp() - prev_state.get_timestamp()
-
-                speed = math.sqrt(vx*vx + vy*vy)
+                speed = math.sqrt(vx * vx + vy * vy)
                 act_point = (x, y)
 
-                self._movements[robot_name] = {'speed': speed, 'angle': act_state.get_theta(),
+                self._movements[robot_name] = {'speed': speed, 'angle': a, 'ang_speed': o,
                                                'act_point': act_point}
 
     @staticmethod
@@ -241,7 +251,7 @@ class SimpleAlgorithm:
         a = abs(x1 - x2)
         b = abs(y1 - y2)
 
-        return math.sqrt(a*a + b*b)
+        return math.sqrt(a * a + b * b)
 
     @staticmethod
     def _angle(x1, y1, x2, y2):

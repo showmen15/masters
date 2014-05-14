@@ -80,7 +80,7 @@ class VisWindow(QtGui.QWidget):
     def _draw_info(self, qp):
         h_pos = 5
         for (name, value) in self._vis_state.get_variables().items():
-            h_pos += 5
+            h_pos += 15
             qp.drawText(5, h_pos, "%s: %s" % (name, value))
 
     def _draw_target(self, qp):

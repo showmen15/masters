@@ -11,7 +11,7 @@ init(RobotName, Pid) ->
 
 loop(RobotName, Pid) ->
 	receive
-		after 20 -> 
+		after 10 -> 
 			notify(RobotName, Pid),
 			loop(RobotName, Pid)
 	end.

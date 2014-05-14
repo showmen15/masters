@@ -32,6 +32,8 @@ class Controller:
 
         self._vis_client = RobotVisClient("127.0.0.1", 9010)
 
+
+
         self.send_ack()
 
     def send_ack(self):
