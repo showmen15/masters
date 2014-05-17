@@ -14,8 +14,7 @@ from kalman.angle_kalman import AngleKalman
 
 class AlgorithmState(Enum):
     obtain_new_target = 1
-    rotate = 2
-    navigate = 3
+    navigate = 2
 
 
 class SimpleAlgorithm:
@@ -24,13 +23,7 @@ class SimpleAlgorithm:
     MAX_SPEED = 0.5
     ANGLE_MEASURE_STEPS = 5
 
-    MIN_X = -5.0
-    MIN_Y = -5.0
 
-    WORLD_WIDTH = 10.0
-    WORLD_HEIGHT = 10.0
-
-    WALL_OFFSET = 1.0
 
     CIRCLES_DELTA = 0.5
     CIRCLES_NUM = 10
@@ -73,7 +66,8 @@ class SimpleAlgorithm:
             if self._my_robot is not None:
                 self._calculates_movements()
                 self._generate_circles()
-                self._make_action()
+                self._navigate()
+                self._send_vis_state()
 
             self._time_util.start_sleep()
 
@@ -132,20 +126,6 @@ class SimpleAlgorithm:
         if self._robot_name in self._states_dict:
             self._my_robot = self._states_dict[self._robot_name]
 
-    def _make_action(self):
-        while True:
-            if self._state == AlgorithmState.obtain_new_target:
-                self._obtain_new_target()
-                self._state = AlgorithmState.navigate
-            elif self._state == AlgorithmState.rotate:
-                self._rotate()
-                break
-            elif self._state == AlgorithmState.navigate:
-                self._navigate()
-                break
-
-        self._send_vis_state()
-
     def _send_vis_state(self):
         vis_state = VisState(self._robot_name, self._states_dict)
         vis_state.set_target(self._target)
@@ -155,33 +135,19 @@ class SimpleAlgorithm:
 
         self._controller.send_vis_update(vis_state)
 
-    def _obtain_new_target(self):
-        target_x = random.uniform(self.MIN_X + self.WALL_OFFSET,
-                                  self.MIN_X + self.WORLD_WIDTH - self.WALL_OFFSET)
-
-        target_y = random.uniform(self.MIN_Y + self.WALL_OFFSET,
-                                  self.MIN_Y + self.WORLD_HEIGHT - self.WALL_OFFSET)
-
-        self._target = (target_x, target_y)
-        self._logger.info("New target obtained: %s, switching to rotate state",
-                          (self._target, ))
-
-    def _rotate(self):
-        angle = self._my_robot.get_theta() - self._target_angle()
-        p = angle / math.pi
-
-        if abs(p) < 0.01:
-            self._state = AlgorithmState.navigate
-            return
-
-        speed = self.MAX_SPEED * p
-        self._controller.send_robot_command(RobotCommand(-speed, speed, -speed, speed))
-
     def _navigate(self):
-        dist = self._target_distance()
-        if dist < 0.05:
-            self._state = AlgorithmState.obtain_new_target
-            return
+
+        dist = None
+
+        while True:
+
+            if self._target is not None:
+                dist = self._target_distance()
+                if dist >= 0.05:
+                    break
+
+            self._controller.obtain_new_target()
+            self._target = self._controller.get_target()
 
         angle = self._my_robot.get_theta() - self._target_angle()
         if abs(angle) > math.pi:
@@ -201,7 +167,6 @@ class SimpleAlgorithm:
         if self._find_intersections(l_speed, r_speed):
             self._send_stop_command()
             return
-            #pass
 
         self._controller.send_robot_command(
             RobotCommand(l_speed, r_speed, l_speed, r_speed))
