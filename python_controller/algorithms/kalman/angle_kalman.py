@@ -63,5 +63,5 @@ class AngleKalman:
     def get_means(self):
         (a, o, e) = self._means
         new_a = (a + math.pi) % (2 * math.pi) - math.pi
-        return new_a, o, e
+        return float(new_a), float(o), float(e)
 

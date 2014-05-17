@@ -36,6 +36,8 @@ class SimpleAlgorithm:
     CIRCLES_NUM = 10
     CIRCLES_RADIUS = 0.5
 
+    ROBOT_WIDTH = 0.2
+
     def __init__(self, controller, robot_name):
         self._logger = logging.getLogger(robot_name)
         self._logger.info("Simple algorithm started")
@@ -114,8 +116,6 @@ class SimpleAlgorithm:
                     self._kf_dict[robot_name].step(new_state.get_x(), new_state.get_y())
                     self._angle_kf_dict[robot_name].step(new_state.get_theta())
 
-                    if robot_name == self._robot_name:
-                        self._f.write("%f\n" % (new_state.get_theta(), ))
                 else:
                     self._kf_dict[robot_name].missing_step()
                     self._angle_kf_dict[robot_name].missing_step()
@@ -195,13 +195,16 @@ class SimpleAlgorithm:
         if dist < 1.0:
             speed *= dist
 
-        if self._find_intersections(speed):
+        l_speed = speed + correction
+        r_speed = speed - correction
+
+        if self._find_intersections(l_speed, r_speed):
             self._send_stop_command()
             return
             #pass
 
         self._controller.send_robot_command(
-            RobotCommand(speed - correction, speed + correction, speed - correction, speed + correction))
+            RobotCommand(l_speed, r_speed, l_speed, r_speed))
 
     def _send_stop_command(self):
         self._controller.send_robot_command(RobotCommand(0, 0, 0, 0))
@@ -271,15 +274,18 @@ class SimpleAlgorithm:
             if self._robot_name == robot_name:
                 continue
 
-            circles = self._generate_circles_for_one(movements['act_point'], movements['speed'], movements['angle'])
+            circles = self._generate_circles_for_other(movements['act_point'], movements['speed'], movements['angle'],
+                                                    movements['ang_speed'])
             self._circles_dict[robot_name] = circles
 
-    def _find_intersections(self, desired_speed):
+    def _find_intersections(self, Vl, Vr):
         if self._robot_name not in self._movements:
             return False
 
         my_movements = self._movements[self._robot_name]
-        my_circles = self._generate_circles_for_one(my_movements['act_point'], desired_speed, my_movements['angle'])
+
+        (x, y) = my_movements['act_point']
+        my_circles = self._generate_circles_for_me(x, y, my_movements['angle'], Vl, Vr)
         self._circles_dict[self._robot_name] = my_circles
 
         my_ff = SimpleAlgorithm._get_ff(self._robot_name)
@@ -301,12 +307,54 @@ class SimpleAlgorithm:
 
         return False
 
-    def _generate_circles_for_one(self, act_point, speed, angle):
-        z = speed * self.CIRCLES_DELTA
+    def _generate_circles_for_other(self, act_point, V, theta, omega):
+        l = SimpleAlgorithm.ROBOT_WIDTH
         (x, y) = act_point
+
+        if abs(omega) < 0.01:
+            return SimpleAlgorithm._generate_circles_in_line_helper(x, y, V, theta)
+
+        R = V / omega
+
+        return SimpleAlgorithm._generate_circles_helper(x, y, R, theta, omega)
+
+    def _generate_circles_for_me(self, x, y, theta, Vl, Vr):
+        l = SimpleAlgorithm.ROBOT_WIDTH
+
+        if abs(Vr - Vl) < 0.01:
+            V = 0.5 * (Vr + Vl)
+            return SimpleAlgorithm._generate_circles_in_line_helper(x, y, V, theta)
+
+        omega = (Vr - Vl) / float(l)
+        R = 0.5 * l * (Vl + Vr)/(Vr - Vl)
+
+        return SimpleAlgorithm._generate_circles_helper(x, y, R, theta, omega)
+
+
+    @staticmethod
+    def _generate_circles_helper(x, y, R, theta, omega):
+        circles = []
+
+        ICCx = x - R * math.sin(theta)
+        ICCy = y + R * math.cos(theta)
+
+        odt = omega * SimpleAlgorithm.CIRCLES_DELTA
+        cos_odt = math.cos(odt)
+        sin_odt = math.sin(odt)
+
+        for i in range(SimpleAlgorithm.CIRCLES_NUM):
+            x = (x - ICCx) * cos_odt - (y - ICCy) * sin_odt + ICCx
+            y = (x - ICCx) * sin_odt + (y - ICCy) * cos_odt + ICCy
+            circles.append((x, y))
+
+        return circles
+
+    @staticmethod
+    def _generate_circles_in_line_helper(x, y, speed, angle):
+        z = speed * SimpleAlgorithm.CIRCLES_DELTA
 
         dx = z * math.sin(angle)
         dy = z * math.cos(angle)
 
-        circles = [(x + dx * i, y + dy * i) for i in range(self.CIRCLES_NUM)]
+        circles = [(x + dx * i, y + dy * i) for i in range(SimpleAlgorithm.CIRCLES_NUM)]
         return circles

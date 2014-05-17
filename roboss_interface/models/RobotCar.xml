@@ -9,15 +9,7 @@
 			size_x="0.2032" size_y="0.24765" size_z="0.1016" friction="0.02" bouncyness="0"/>			
             </Geoms>
         </Part>
-        <Part name="LeftFrontWheel" position_x="-0.13176" position_y="0.1238" position_z="0">
-            <Mass type="cylinder" size_x="0.0603" size_y="0.0603" mass="0.1814"/>
-            <Geoms>
-			<Geom  type="cylinder"  color="00662211" rotation_y="1.5707963267948966192313216916398"
-			size_x="0.0603" size_y="0.0603" friction="3.9" bouncyness="0.2"/>
-			
-            </Geoms>
-        </Part>
-        <Part name="RightFrontWheel" position_x="0.13176" position_y="0.1238" position_z="0">
+        <Part name="LeftFrontWheel" position_x="0.13176" position_y="0.1238" position_z="0">
           <Mass type="cylinder" size_x="0.0603" size_y="0.0603" mass="0.1814"/>
             <Geoms>
 			<Geom  type="cylinder"  color="00662211" rotation_y="1.5707963267948966192313216916398"
@@ -25,16 +17,24 @@
 			
             </Geoms>
         </Part>
-        <Part name="LeftRearWheel" position_x="-0.13176" position_y="-0.1238" position_z="0">
-          <Mass type="cylinder" size_x="0.0603" size_y="0.0603" mass="0.1814"/>
+        <Part name="RightFrontWheel" position_x="-0.13176" position_y="0.1238" position_z="0">
+            <Mass type="cylinder" size_x="0.0603" size_y="0.0603" mass="0.1814"/>
+            <Geoms>
+			<Geom  type="cylinder"  color="00662211" rotation_y="1.5707963267948966192313216916398"
+			size_x="0.0603" size_y="0.0603" friction="3.9" bouncyness="0.2"/>
+			
+            </Geoms>
+        </Part>        
+        <Part name="LeftRearWheel" position_x="0.13176" position_y="-0.1238" position_z="0">
+            <Mass type="cylinder" size_x="0.0603" size_y="0.0603" mass="0.1814"/>
             <Geoms>
 			<Geom  type="cylinder"  color="00662211" rotation_y="1.5707963267948966192313216916398"
 			size_x="0.0603" size_y="0.0603" friction="3.9" bouncyness="0.2"/>
 			
             </Geoms>
         </Part>
-        <Part name="RightRearWheel" position_x="0.13176" position_y="-0.1238" position_z="0">
-            <Mass type="cylinder" size_x="0.0603" size_y="0.0603" mass="0.1814"/>
+        <Part name="RightRearWheel" position_x="-0.13176" position_y="-0.1238" position_z="0">
+          <Mass type="cylinder" size_x="0.0603" size_y="0.0603" mass="0.1814"/>
             <Geoms>
 			<Geom  type="cylinder"  color="00662211" rotation_y="1.5707963267948966192313216916398"
 			size_x="0.0603" size_y="0.0603" friction="3.9" bouncyness="0.2"/>
