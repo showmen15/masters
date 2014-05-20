@@ -12,6 +12,7 @@ import random
 import atexit
 from robot_model import State
 from algorithms.simple import SimpleAlgorithm
+from algorithms.go_and_turn import GoAndTurn
 from erl_port import ErlangPort
 from robot_vis.client import RobotVisClient
 
@@ -34,7 +35,7 @@ class Controller:
         self._robot_name = robot_name
         self._target = None
 
-        if self._logger.isEnabledFor(logging.DEBUG):
+        if True:
             self._samples_file = open("/tmp/%s.samples" % (self._robot_name, ), 'w')
         else:
             self._samples_file = None

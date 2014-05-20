@@ -8,6 +8,7 @@ import traceback
 import cPickle
 import numpy
 from algorithms.simple import SimpleAlgorithm
+from algorithms.go_and_turn import GoAndTurn
 from robot_vis.client import RobotVisClient
 from collections import deque
 
@@ -105,7 +106,7 @@ if __name__ == "__main__":
     robot_name = sys.argv[1]
     samples_file = sys.argv[2]
 
-    controller = MockController(samples_file, robot_name, SimpleAlgorithm)
+    controller = MockController(samples_file, robot_name, GoAndTurn)
 
     #import cProfile
     #cProfile.run('controller.loop()', '/tmp/profile.out')

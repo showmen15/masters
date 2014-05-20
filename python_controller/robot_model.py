@@ -1,5 +1,9 @@
 
-class State():
+class RobotConstants:
+
+    ROBOT_WIDTH = 0.2
+
+class State:
     def __init__(self, robot_name, x, y, theta, timestamp):
         self._robot_name = robot_name
         self._x = x
@@ -47,15 +51,15 @@ class State():
 
 class VisState:
 
-    def __init__(self, robot_name, states_dict):
+    def __init__(self, robot_name, state):
         self._robot_name = robot_name
-        self._states_dict = states_dict
+        self._state = state
         self._target = None
         self._variables = {}
-        self._circles_dict = None
+        self._predictions = None
 
-    def get_states_dict(self):
-        return self._states_dict
+    def get_state(self):
+        return self._state
 
     def get_robot_name(self):
         return self._robot_name
@@ -72,8 +76,8 @@ class VisState:
     def get_variables(self):
         return self._variables
 
-    def set_circles(self, circles):
-        self._circles_dict = circles
+    def set_predictions(self, predictions):
+        self._predictions = predictions
 
-    def get_circles_dict(self):
-        return self._circles_dict
+    def get_predictions(self):
+        return self._predictions

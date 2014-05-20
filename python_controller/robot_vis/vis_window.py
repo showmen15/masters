@@ -55,23 +55,21 @@ class VisWindow(QtGui.QWidget):
         self.update()
 
     def _draw_robots(self, qp):
-        for state in self._vis_state.get_states_dict().values():
-            if self._robot_name == state.get_robot_name():
+        for (robot_name, (x, y, theta)) in self._vis_state.get_state().items():
+            if self._robot_name == robot_name:
                 color = QtCore.Qt.red
             else:
                 color = QtCore.Qt.black
 
             qp.setPen(color)
 
-            x = state.get_x()
-            y = state.get_y()
             (win_x, win_y) = self._window_location(x, y)
             qp.translate(win_x, win_y)
 
-            qp.drawText(-30, 25, "(%.2f, %.2f) %.2f" % (state.get_x(), state.get_y(), state.get_theta()))
-            qp.drawText(-20, -15, state.get_robot_name())
+            qp.drawText(-30, 25, "(%.2f, %.2f) %.2f" % (x, y, theta))
+            qp.drawText(-20, -15, robot_name)
 
-            qp.rotate(math.degrees(-state.get_theta()))
+            qp.rotate(math.degrees(-theta))
             qp.drawRect(-5, -7, 10, 14)
             qp.fillRect(-1, 7, 2, 2, color)
 
@@ -98,7 +96,7 @@ class VisWindow(QtGui.QWidget):
                     win_x + self.CROSS_HALF_SIZE, win_y + self.CROSS_HALF_SIZE)
 
     def _draw_circles(self, qp):
-        circles_dict = self._vis_state.get_circles_dict()
+        circles_dict = self._vis_state.get_predictions()
 
         if circles_dict is None:
             return
