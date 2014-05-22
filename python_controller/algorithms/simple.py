@@ -91,6 +91,15 @@ class SimpleAlgorithm(AbstractAlgorithm):
         omega = (Vr - Vl) / RobotConstants.ROBOT_WIDTH
 
         own_predictions = PredictionUtils.predict_positions(x, y, v, theta, omega)
+
+        (tx, ty) = self._target
+
+        for i in range(len(own_predictions)):
+            (px, py) = own_predictions[i]
+            if MeasurementUtils.distance(px, py, tx, ty) < 0.3:
+                own_predictions = own_predictions[:i+1]
+                break
+
         self._predictions[self._robot_name] = own_predictions
 
         my_ff = AbstractAlgorithm.get_ff(self._robot_name)
