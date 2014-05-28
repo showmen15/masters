@@ -7,7 +7,7 @@ from robot_model import RobotConstants
 class PredictionUtils:
 
     CIRCLES_DELTA = 0.5
-    CIRCLES_NUM = 10
+    CIRCLES_NUM = 5
 
     @staticmethod
     def predict_positions(x, y, v, theta, omega):

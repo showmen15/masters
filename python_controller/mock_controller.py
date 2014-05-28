@@ -106,7 +106,7 @@ if __name__ == "__main__":
     robot_name = sys.argv[1]
     samples_file = sys.argv[2]
 
-    controller = MockController(samples_file, robot_name, GoAndTurn)
+    controller = MockController(samples_file, robot_name, SimpleAlgorithm)
 
     #import cProfile
     #cProfile.run('controller.loop()', '/tmp/profile.out')

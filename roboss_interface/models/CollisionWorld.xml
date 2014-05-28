@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- /RobotsWorld.xml, jednostki w ukladzie SI -->
+
+<World name="city">
+    <Robots>
+		<Robot name="robot1" type="RobotCar" position_x="4.5"  position_y="4.5" position_z="1" rotation_z="2.39"/>
+    	<Robot name="robot2" type="RobotCar" position_x="3.5"  position_y="3.5" position_z="1" rotation_z="3.925"/>
+     	<!--<Robot name="robot3" type="RobotCar" position_x="-4.5"  position_y="-4.5" position_z="1" rotation_z="-0.785"/>-->
+    </Robots>
+    
+    <Environment>
+            <Geoms>
+			<!-- ground -->
+			<Geom  type="box"  
+			position_x="0" position_y="0" position_z="0" rotation_x="0" rotation_y="0" rotation_z="0" 
+			size_x="10" size_y="10" size_z="0.1" friction="1" bouncyness="0.6"/>
+			
+			<!-- world walls -->
+			<Geom  type="box"  color="80003366" 
+			position_x="0" position_y="5" position_z="1" rotation_x="0" rotation_y="0" rotation_z="0" 
+			size_x="10" size_y="0.1" size_z="2" friction="0.0" bouncyness="0.3"/>
+			<Geom  type="box"  color="80003366" 
+			position_x="0" position_y="-5" position_z="1" rotation_x="0" rotation_y="0" rotation_z="0" 
+			size_x="10" size_y="0.1" size_z="2" friction="0.0" bouncyness="0.3"/>
+			<Geom  type="box" color="80003366"  
+			position_x="5" position_y="0" position_z="1" rotation_x="0" rotation_y="0" rotation_z="0" 
+			size_x="0.1" size_y="10" size_z="2" friction="0.0" bouncyness="0.3"/>
+			<Geom  type="box"  color="80003366" 
+			position_x="-5" position_y="0" position_z="1" rotation_x="0" rotation_y="0" rotation_z="0" 
+			size_x="0.1" size_y="10" size_z="2" friction="0.0" bouncyness="0.3"/>
+		
+            </Geoms>
+    </Environment>
+</World>

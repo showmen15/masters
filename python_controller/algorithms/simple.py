@@ -1,4 +1,5 @@
 from algorithms.abstract_algorithm import AbstractAlgorithm
+import random
 
 __author__ = 'michal'
 
@@ -20,16 +21,23 @@ class SimpleAlgorithm(AbstractAlgorithm):
         self._logger.info("Simple algorithm started")
 
         self._target = None
+        self._last_params = None
 
     def reset(self):
         super(SimpleAlgorithm, self).reset()
 
         self._target = None
+        self._last_params = None
 
     def _loop(self):
         self._navigate()
 
     def _navigate(self):
+
+        if self._robot_name == "robot2":
+            self._send_stop_command()
+            return None
+
         dist = None
 
         while True:
@@ -48,21 +56,85 @@ class SimpleAlgorithm(AbstractAlgorithm):
 
         p = angle / math.pi
 
-        correction = self.MAX_SPEED * p * 2.0
-        speed = self.MAX_SPEED
+        omega = -10.0 * p * 2.0
+        omega = math.copysign(min(abs(omega), 5.0), omega)
+
+        v = self.MAX_SPEED
 
         if dist < 1.0:
-            speed *= dist
+            v *= dist
 
-        l_speed = speed + correction
-        r_speed = speed - correction
+        x = self._own_robot['x']
+        y = self._own_robot['y']
+        theta = self._own_robot['theta']
 
-        if self._find_intersections(l_speed, r_speed):
+        best_v = v
+        best_omega = omega
+
+        best_preds = PredictionUtils.predict_positions(x, y, v, theta, omega)
+        best_preds = self._cut_predictions(best_preds)
+
+
+        best_rate = 0.0
+
+        self._predictions[self._robot_name] = best_preds
+        self._variables['rate'] = self._rate_predictions(best_preds)
+
+        #if self._find_intersections(best_preds):
+        best_v = None
+        best_omega = None
+        best_rate = None
+        best_preds = None
+
+        if self._last_params is not None:
+            best_v, best_omega = self._last_params
+            best_preds = self._cut_predictions(PredictionUtils.predict_positions(x, y, best_v, theta, best_omega))
+            best_rate = self._rate_predictions(best_preds)
+
+            if self._find_intersections(best_preds):
+                best_v = None
+                best_omega = None
+                best_rate = None
+                best_preds = None
+
+            #print "last best_rate" + str(best_rate)
+
+        for i in range(20):
+            rand_v = random.uniform(-self.MAX_SPEED, self.MAX_SPEED)
+            rand_omega = random.uniform(-10.0, 10.0)
+
+            rand_preds = self._cut_predictions(PredictionUtils.predict_positions(x, y, rand_v, theta, rand_omega))
+            rand_rate = self._rate_predictions(rand_preds)
+
+            #print "   rand_rate " + str(rand_rate)
+
+            if self._find_intersections(rand_preds):
+                continue
+
+            if best_rate is None or rand_rate < best_rate:
+                if best_rate is not None:
+                    self._logger.info("ABC old best: %f, new best: %f" % (best_rate, rand_rate))
+
+                best_v, best_omega, best_preds, best_rate = rand_v, rand_omega, rand_preds, rand_rate
+                self._last_params = best_v, best_omega
+
+        #else:
+        #    self._last_params = None
+
+        if best_preds is None:
             self._send_stop_command()
             return
+        else:
+            self._predictions[self._robot_name] = best_preds
+            self._variables['rate'] = self._rate_predictions(best_preds)
 
-        self._controller.send_robot_command(
-            RobotCommand(l_speed, r_speed, l_speed, r_speed))
+            Vr = best_v + 0.5 * RobotConstants.ROBOT_WIDTH * best_omega
+            Vl = 2 * best_v - Vr
+
+            #self._logger.info("ABC v: %f, omega: %f, rate: %f, vl: %f,  vr: %f" % (best_v, best_omega, best_rate, Vl, Vr))
+
+            self._controller.send_robot_command(
+                RobotCommand(Vl, Vr, Vl, Vr))
 
     def _target_distance(self):
         assert self._target is not None
@@ -82,25 +154,26 @@ class SimpleAlgorithm(AbstractAlgorithm):
 
         return MeasurementUtils.angle(mx, my, tx, ty)
 
-    def _find_intersections(self, Vl, Vr):
-        x = self._own_robot['x']
-        y = self._own_robot['y']
-        theta = self._own_robot['theta']
-
-        v = 0.5 * (Vr + Vl)
-        omega = (Vr - Vl) / RobotConstants.ROBOT_WIDTH
-
-        own_predictions = PredictionUtils.predict_positions(x, y, v, theta, omega)
-
+    def _cut_predictions(self, predictions):
         (tx, ty) = self._target
 
-        for i in range(len(own_predictions)):
-            (px, py) = own_predictions[i]
+        for i in range(len(predictions)):
+            (px, py) = predictions[i]
             if MeasurementUtils.distance(px, py, tx, ty) < 0.3:
-                own_predictions = own_predictions[:i+1]
-                break
+                return predictions[:i+1]
 
-        self._predictions[self._robot_name] = own_predictions
+        return predictions
+
+    def _rate_predictions(self, predictions):
+        assert len(predictions) > 0
+
+        (tx, ty) = self._target
+        (px, py) = predictions[-1]
+
+        return MeasurementUtils.distance(px, py, tx, ty)
+
+    def _find_intersections(self, own_predictions):
+        assert len(own_predictions) > 0
 
         my_ff = AbstractAlgorithm.get_ff(self._robot_name)
 
@@ -116,8 +189,3 @@ class SimpleAlgorithm(AbstractAlgorithm):
                     return True
 
         return False
-
-
-
-
-

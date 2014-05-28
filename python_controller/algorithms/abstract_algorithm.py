@@ -12,7 +12,7 @@ from kalman.angle_kalman import AngleKalman
 
 
 class AbstractAlgorithm(object):
-    SAVE_STATES = False
+    SAVE_STATES = True
 
     INTERVAL = 0.02 #s
     MEASURE_STEPS = 50 * 5 # 5s
@@ -29,6 +29,7 @@ class AbstractAlgorithm(object):
         self._predictions = None
         self._own_robot = None
         self._running = True
+        self._variables = {}
 
         if self.SAVE_STATES:
             self._f = open("/tmp/%s.states" % (self._robot_name, ), 'w')
@@ -45,6 +46,7 @@ class AbstractAlgorithm(object):
         self._predictions = None
         self._own_robot = None
         self._running = True
+        self._variables = {}
 
     def start(self):
         self._logger.info("Start")
@@ -84,6 +86,9 @@ class AbstractAlgorithm(object):
         vis_state = VisState(self._robot_name, states_to_send)
         vis_state.set_target(self._target)
         vis_state.set_predictions(self._predictions)
+
+        for k, v in self._variables.items():
+            vis_state.add_variable(k, v)
 
         self._controller.send_vis_update(vis_state)
 

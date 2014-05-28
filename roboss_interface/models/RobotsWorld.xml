@@ -5,7 +5,7 @@
     <Robots>
 		<Robot name="robot1" type="RobotCar" position_x="4.5"  position_y="4.5" position_z="1" rotation_z="2.39"/>
     	<Robot name="robot2" type="RobotCar" position_x="-4.5"  position_y="4.5" position_z="1" rotation_z="3.925"/>
-     	<Robot name="robot3" type="RobotCar" position_x="-4.5"  position_y="-4.5" position_z="1" rotation_z="-0.785"/>
+     	<!--<Robot name="robot3" type="RobotCar" position_x="-4.5"  position_y="-4.5" position_z="1" rotation_z="-0.785"/>-->
     </Robots>
     
     <Environment>
