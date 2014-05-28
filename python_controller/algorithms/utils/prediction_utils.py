@@ -6,7 +6,7 @@ from robot_model import RobotConstants
 
 class PredictionUtils:
 
-    CIRCLES_DELTA = 0.25
+    CIRCLES_DELTA = 0.5
     CIRCLES_NUM = 10
 
     @staticmethod
@@ -46,6 +46,9 @@ class PredictionUtils:
 
     @staticmethod
     def predict_positions(x, y, v, theta, omega):
+
+        #print "predict, x: %f, y: %f, v: %f, theta: %f, omega: %f" % (x, y, v, theta, omega)
+
         l = RobotConstants.ROBOT_WIDTH
 
         if abs(omega) < 0.001:

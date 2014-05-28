@@ -102,6 +102,9 @@ class VisWindow(QtGui.QWidget):
             return
 
         for (robot_name, circles) in circles_dict.items():
+            if circles is None:
+                continue
+
             if self._robot_name == robot_name:
                 color = QtCore.Qt.red
             else:
