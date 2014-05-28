@@ -50,28 +50,16 @@ class SimpleAlgorithm(AbstractAlgorithm):
             self._controller.obtain_new_target()
             self._target = self._controller.get_target()
 
-        angle = self._own_robot['theta'] - self._target_angle()
-        if abs(angle) > math.pi:
-            angle -= math.copysign(2.0 * math.pi, angle)
-
-        p = angle / math.pi
-
-        omega = -10.0 * p * 2.0
-        omega = math.copysign(min(abs(omega), 5.0), omega)
-
-        v = self.MAX_SPEED
-
-        if dist < 1.0:
-            v *= dist
-
         x = self._own_robot['x']
         y = self._own_robot['y']
         theta = self._own_robot['theta']
 
+        v, omega = SimpleAlgorithm._navigate_fun(x, y, theta, self._target)
+
         best_v = v
         best_omega = omega
 
-        best_preds = PredictionUtils.predict_positions(x, y, v, theta, omega)
+        best_preds = PredictionUtils.predict_positions_with_fun(x, y, theta, self._target, SimpleAlgorithm._navigate_fun)
         best_preds = self._cut_predictions(best_preds)
 
 
@@ -80,46 +68,49 @@ class SimpleAlgorithm(AbstractAlgorithm):
         self._predictions[self._robot_name] = best_preds
         self._variables['rate'] = self._rate_predictions(best_preds)
 
-        #if self._find_intersections(best_preds):
-        best_v = None
-        best_omega = None
-        best_rate = None
-        best_preds = None
+        if self._find_intersections(best_preds, self.CIRCLES_RADIUS):
+            best_v = None
+            best_omega = None
+            best_rate = None
+            best_preds = None
 
-        if self._last_params is not None:
-            best_v, best_omega = self._last_params
-            best_preds = self._cut_predictions(PredictionUtils.predict_positions(x, y, best_v, theta, best_omega))
-            best_rate = self._rate_predictions(best_preds)
+            if self._last_params is not None:
+                best_v, best_omega = self._last_params
+                best_preds = self._cut_predictions(PredictionUtils.predict_positions(x, y, best_v, theta, best_omega))
+                best_rate = self._rate_predictions(best_preds)
 
-            if self._find_intersections(best_preds):
-                best_v = None
-                best_omega = None
-                best_rate = None
-                best_preds = None
+                self._logger.info("ABC last new best rate: %f" % (best_rate))
 
-            #print "last best_rate" + str(best_rate)
+                if self._find_intersections(best_preds, self.CIRCLES_RADIUS):
+                    self._logger.info("ABC INTER")
+                    best_v = None
+                    best_omega = None
+                    best_rate = None
+                    best_preds = None
 
-        for i in range(20):
-            rand_v = random.uniform(-self.MAX_SPEED, self.MAX_SPEED)
-            rand_omega = random.uniform(-10.0, 10.0)
+                #print "last best_rate" + str(best_rate)
 
-            rand_preds = self._cut_predictions(PredictionUtils.predict_positions(x, y, rand_v, theta, rand_omega))
-            rand_rate = self._rate_predictions(rand_preds)
+            for i in range(50):
+                rand_v = random.uniform(-self.MAX_SPEED, self.MAX_SPEED)
+                rand_omega = random.uniform(-10.0, 10.0)
 
-            #print "   rand_rate " + str(rand_rate)
+                rand_preds = self._cut_predictions(PredictionUtils.predict_positions(x, y, rand_v, theta, rand_omega))
+                rand_rate = self._rate_predictions(rand_preds)
 
-            if self._find_intersections(rand_preds):
-                continue
+                #print "   rand_rate " + str(rand_rate)
 
-            if best_rate is None or rand_rate < best_rate:
-                if best_rate is not None:
-                    self._logger.info("ABC old best: %f, new best: %f" % (best_rate, rand_rate))
+                if self._find_intersections(rand_preds, self.CIRCLES_RADIUS * 2):
+                    continue
 
-                best_v, best_omega, best_preds, best_rate = rand_v, rand_omega, rand_preds, rand_rate
-                self._last_params = best_v, best_omega
+                if best_rate is None or rand_rate < best_rate - 0.5:
+                    if best_rate is not None:
+                        self._logger.info("ABC old best: %f, new best: %f" % (best_rate, rand_rate))
 
-        #else:
-        #    self._last_params = None
+                    best_v, best_omega, best_preds, best_rate = rand_v, rand_omega, rand_preds, rand_rate
+                    self._last_params = best_v, best_omega
+
+        else:
+            self._last_params = None
 
         if best_preds is None:
             self._send_stop_command()
@@ -135,6 +126,29 @@ class SimpleAlgorithm(AbstractAlgorithm):
 
             self._controller.send_robot_command(
                 RobotCommand(Vl, Vr, Vl, Vr))
+
+    @staticmethod
+    def _navigate_fun(x, y, theta, target):
+        tx, ty = target
+        target_dist = MeasurementUtils.distance(x, y, tx, ty)
+        target_angle = MeasurementUtils.angle(x, y, tx, ty)
+
+        angle = theta - target_angle
+        if abs(angle) > math.pi:
+            angle -= math.copysign(2.0 * math.pi, angle)
+
+        p = angle / math.pi
+
+        omega = -10.0 * p * 2.0
+        omega = math.copysign(min(abs(omega), 5.0), omega)
+
+        v = SimpleAlgorithm.MAX_SPEED
+
+        if target_dist < 1.0:
+            v *= target_dist
+
+        return v, omega
+
 
     def _target_distance(self):
         assert self._target is not None
@@ -172,7 +186,7 @@ class SimpleAlgorithm(AbstractAlgorithm):
 
         return MeasurementUtils.distance(px, py, tx, ty)
 
-    def _find_intersections(self, own_predictions):
+    def _find_intersections(self, own_predictions, radius):
         assert len(own_predictions) > 0
 
         my_ff = AbstractAlgorithm.get_ff(self._robot_name)
@@ -185,7 +199,7 @@ class SimpleAlgorithm(AbstractAlgorithm):
                 continue
 
             for ((mx, my), (ox, oy)) in zip(own_predictions, other_predictions):
-                if MeasurementUtils.distance(mx, my, ox, oy) <= self.CIRCLES_RADIUS:
+                if MeasurementUtils.distance(mx, my, ox, oy) <= radius:
                     return True
 
         return False
