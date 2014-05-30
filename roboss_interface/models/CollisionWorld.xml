@@ -3,8 +3,8 @@
 
 <World name="city">
     <Robots>
-		<Robot name="robot1" type="RobotCar" position_x="4.5"  position_y="4.5" position_z="1" rotation_z="2.39"/>
-    	<Robot name="robot2" type="RobotCar" position_x="3.0"  position_y="3.0" position_z="1" rotation_z="3.925"/>
+		<Robot name="robot1" type="RobotCar" position_x="2.5"  position_y="2.5" position_z="1" rotation_z="2.39"/>
+    	<Robot name="robot2" type="RobotCar" position_x="2.2"  position_y="2.2" position_z="1" rotation_z="3.925"/>
     </Robots>
     
     <Environment>
