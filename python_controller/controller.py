@@ -39,7 +39,7 @@ class Controller:
         self._randomize_target = True
         self._roson = None
 
-        if True:
+        if False:
             self._samples_file = open("/tmp/%s.samples" % (self._robot_name, ), 'w')
         else:
             self._samples_file = None
@@ -188,7 +188,7 @@ if __name__ == "__main__":
         sys.exit(0)
 
     robot_name = sys.argv[1]
-    controller = Controller(robot_name, SimpleAlgorithm)
+    controller = Controller(robot_name, FearfulAlgorithm)
 
     if len(sys.argv) == 3:
         roson_file = open(sys.argv[2])
