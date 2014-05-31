@@ -4,6 +4,8 @@
 import sys, random
 from PyQt4 import QtGui, QtCore
 import math
+from gnuradio.analog.analog_swig import feedforward_agc_cc
+
 
 class VisWindow(QtGui.QWidget):
 
@@ -28,6 +30,7 @@ class VisWindow(QtGui.QWidget):
 
         self._robot_name = robot_name
         self._vis_state = None
+        self._colors = {}
 
         self.initUI()
 
@@ -52,21 +55,40 @@ class VisWindow(QtGui.QWidget):
     def update_state(self, vis_state):
         assert self._robot_name == vis_state.get_robot_name()
         self._vis_state = vis_state
+        self._update_colors()
         self.update()
+
+    def _update_colors(self):
+        for robot_name in self._vis_state.get_state().keys():
+            if self._robot_name == robot_name:
+                color = QtCore.Qt.black
+            else:
+                fear_factors = self._vis_state.get_fear_factors()
+                if fear_factors is not None:
+                    if fear_factors[robot_name] > fear_factors[self._robot_name]:
+                        color = QtCore.Qt.red
+                    else:
+                        color = QtCore.Qt.darkGreen
+                else:
+                    color = QtCore.Qt.darkBlue
+
+            self._colors[robot_name] = color
 
     def _draw_robots(self, qp):
         for (robot_name, (x, y, theta)) in self._vis_state.get_state().items():
-            if self._robot_name == robot_name:
-                color = QtCore.Qt.red
-            else:
-                color = QtCore.Qt.black
-
+            color = self._colors[robot_name]
             qp.setPen(color)
 
             (win_x, win_y) = self._window_location(x, y)
             qp.translate(win_x, win_y)
 
-            qp.drawText(-30, 25, "(%.2f, %.2f) %.2f" % (x, y, theta))
+            #qp.drawText(-30, 25, "(%.2f, %.2f) %.2f" % (x, y, theta))
+
+            fear_factors = self._vis_state.get_fear_factors()
+            if feedforward_agc_cc is not None:
+                ff = fear_factors[self._robot_name]
+                qp.drawText(-30, 25, "ff: %.2f" % (fear_factors[robot_name]))
+
             qp.drawText(-20, -15, robot_name)
 
             qp.rotate(math.degrees(-theta))
@@ -76,6 +98,8 @@ class VisWindow(QtGui.QWidget):
             qp.resetTransform()
 
     def _draw_info(self, qp):
+        qp.setPen(QtCore.Qt.black)
+
         h_pos = 5
         for (name, value) in self._vis_state.get_variables().items():
             h_pos += 15
@@ -89,7 +113,7 @@ class VisWindow(QtGui.QWidget):
         (x, y) = target
         (win_x, win_y) = self._window_location(x, y)
 
-        qp.setPen(QtCore.Qt.red)
+        qp.setPen(QtCore.Qt.black)
         qp.drawLine(win_x - self.CROSS_HALF_SIZE, win_y + self.CROSS_HALF_SIZE,
                     win_x + self.CROSS_HALF_SIZE, win_y - self.CROSS_HALF_SIZE)
         qp.drawLine(win_x - self.CROSS_HALF_SIZE, win_y - self.CROSS_HALF_SIZE,
@@ -105,11 +129,7 @@ class VisWindow(QtGui.QWidget):
             if circles is None:
                 continue
 
-            if self._robot_name == robot_name:
-                color = QtCore.Qt.red
-            else:
-                color = QtCore.Qt.black
-
+            color = self._colors[robot_name]
             qp.setPen(color)
 
             for (x, y) in circles:

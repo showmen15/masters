@@ -72,7 +72,7 @@ class AbstractAlgorithm(object):
 
     @staticmethod
     def get_ff(robot_name):
-        return int(robot_name[5:])
+        return 1.0 + int(robot_name[5:])/100.0
 
     def _send_stop_command(self):
         self._controller.send_robot_command(RobotCommand(0, 0, 0, 0))
@@ -87,10 +87,15 @@ class AbstractAlgorithm(object):
         vis_state.set_target(self._target)
         vis_state.set_predictions(self._predictions)
 
+        self._modify_vis_state(vis_state)
+
         for k, v in self._variables.items():
             vis_state.add_variable(k, v)
 
         self._controller.send_vis_update(vis_state)
+
+    def _modify_vis_state(self, vis_state):
+        pass
 
     def _update_states(self):
         new_states = self._controller.request_states()

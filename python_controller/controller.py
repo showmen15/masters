@@ -13,6 +13,7 @@ import atexit
 from robot_model import State
 from algorithms.simple import SimpleAlgorithm
 from algorithms.go_and_turn import GoAndTurn
+from algorithms.fearful import FearfulAlgorithm
 from erl_port import ErlangPort
 from robot_vis.client import RobotVisClient
 
@@ -162,7 +163,7 @@ if __name__ == "__main__":
         sys.exit(0)
 
     robot_name = sys.argv[1]
-    controller = Controller(robot_name, SimpleAlgorithm)
+    controller = Controller(robot_name, FearfulAlgorithm)
 
     @atexit.register
     def exit_handler():

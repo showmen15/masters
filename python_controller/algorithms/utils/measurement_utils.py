@@ -18,3 +18,10 @@ class MeasurementUtils:
         y = y2 - y1
 
         return math.atan2(x, y)
+
+    @staticmethod
+    def normalize_angle(angle):
+        if abs(angle) > math.pi:
+            angle -= math.copysign(2.0 * math.pi, angle)
+
+        return angle
