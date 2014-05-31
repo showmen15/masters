@@ -1,0 +1,137 @@
+{
+  "walls": [
+    {
+      "type": "wall",
+      "id": "Wall0",
+      "width": 0.1,
+      "height": 2.0,
+      "color": "80003366",
+      "from": {
+        "x": 0.0,
+        "y": 10.0
+      },
+      "to": {
+        "x": 10.0,
+        "y": 10.0
+      }
+    },
+    {
+      "type": "wall",
+      "id": "Wall1",
+      "width": 0.1,
+      "height": 2.0,
+      "color": "80003366",
+      "from": {
+        "x": 0.0,
+        "y": 0.0
+      },
+      "to": {
+        "x": 10.0,
+        "y": 0.0
+      }
+    },
+    {
+      "type": "wall",
+      "id": "Wall2",
+      "width": 0.1,
+      "height": 2.0,
+      "color": "80003366",
+      "from": {
+        "x": 5.0,
+        "y": 5.0
+      },
+      "to": {
+        "x": 15.0,
+        "y": 5.0
+      }
+    },
+    {
+      "type": "wall",
+      "id": "Wall3",
+      "width": 0.1,
+      "height": 2.0,
+      "color": "80003366",
+      "from": {
+        "x": -5.0,
+        "y": 5.0
+      },
+      "to": {
+        "x": 5.0,
+        "y": 5.0
+      }
+    }
+  ],
+  "gates": [],
+  "spaces": [],
+  "nodes": [],
+  "robots": [
+    {
+      "type": "robot",
+      "id": "robot1",
+      "kind": "RobotCar",
+      "location": {
+        "x": 5.0,
+        "y": 7.5,
+        "z": 1.0,
+        "alpha": 0.0001
+      },
+      "target": {
+        "x": 5.0,
+        "y": 0.5
+      }
+    },
+    {
+      "type": "robot",
+      "id": "robot2",
+      "kind": "RobotCar",
+      "location": {
+        "x": 5.0,
+        "y": 8.5,
+        "z": 1.0,
+        "alpha": 0.0001
+      },
+      "target": {
+        "x": 5.0,
+        "y": 1.5
+      }
+    },
+    {
+      "type": "robot",
+      "id": "robot3",
+      "kind": "RobotCar",
+      "location": {
+        "x": 5.0,
+        "y": 9.5,
+        "z": 1.0,
+        "alpha": 0.0001
+      },
+      "target": {
+        "x": 5.0,
+        "y": 2.5
+      }      
+    },
+    {
+      "type": "robot",
+      "id": "robot4",
+      "kind": "RobotCar",
+      "location": {
+        "x": 5.0,
+        "y": 0.5,
+        "z": 1.0,
+        "alpha": 0.0001
+      },
+      "target": {
+        "x": 5.0,
+        "y": 9.5
+      }
+    }
+  ],
+  "victims": [],
+  "space-walls": [],
+  "space-gates": [],
+  "space-nodes": [],
+  "space-robots": [],
+  "space-victims": [],
+  "gate-nodes": [],
+  "node-nodes": []
+}
