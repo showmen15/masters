@@ -1,3 +1,8 @@
 #!/bin/bash
 
-erl -pa apps/*/ebin -pa deps/*/ebin/ -sname client -setcookie agh -eval "application:start(client)"
+
+if [ $# -gt 0 ]; then
+	WORLD_ARG="-world $1"
+fi
+
+erl -pa apps/*/ebin -pa deps/*/ebin/ -sname client -setcookie agh -eval "application:start(client)" $WORLD_ARG

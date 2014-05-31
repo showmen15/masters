@@ -27,17 +27,24 @@ set_event(Pid, Event) ->
 
 %% gen_server callbacks
 init(RobotName) ->
-	%{ok, ClientPath} = application:get_env(	client, client_path),
-	%{ok, ClientCommand} = application:get_env(client, client_command),
-	ClientPath = "../python_controller/",
-	ClientCommand = "controller.py",
-	
-	io:format("client_driver: ~s ~s ~s~n", [ClientPath, ClientCommand, RobotName]),
+	{ok, ClientPath} = application:get_env(client, client_path),
+	{ok, ClientCommand} = application:get_env(client, client_command),
+	{ok, RosonDir} = application:get_env(client, roson_dir),
+
+	Args = case init:get_argument(world) of
+		{ok, World} -> 
+			RosonArg = RosonDir ++ World ++ ".roson",
+			[RobotName, RosonArg];
+		error ->
+			[RobotName]
+		end,
+
+	io:format("client_driver: ~s ~s ~s~n", [ClientPath, ClientCommand, string:join(Args, " ")]),
 
 	process_flag(trap_exit, true),
 	Port = open_port({spawn_executable, ClientPath ++ ClientCommand}, [
 		{packet, 2}, 
-		{args, [RobotName]},
+		{args, Args},
 		{cd, ClientPath}]),
 
 	receive

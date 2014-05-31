@@ -9,8 +9,9 @@
                  ]},
   {mod, { client_app, []}},
   {env, [
-  	{client_path, "../python-controller"},
-  	{client_command, "python controller.py"},
+  	{client_path, "../python_controller/"},
+  	{client_command, "controller.py"},
+    {roson_dir, "../roboss_interface/models/"},
     {roboss_node, roboss@rose}
   ]}
  ]}.

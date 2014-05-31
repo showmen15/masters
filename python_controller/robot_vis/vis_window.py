@@ -9,11 +9,11 @@ from gnuradio.analog.analog_swig import feedforward_agc_cc
 
 class VisWindow(QtGui.QWidget):
 
-    MAX_X = 6
-    MIN_X = -MAX_X
+    MAX_X = 11
+    MIN_X = -1
 
-    MAX_Y = 6
-    MIN_Y = -MAX_Y
+    MAX_Y = 11
+    MIN_Y = -1
 
     WIDTH = abs(MAX_X - MIN_X)
     HEIGHT = abs(MAX_Y - MIN_Y)
@@ -85,7 +85,7 @@ class VisWindow(QtGui.QWidget):
             #qp.drawText(-30, 25, "(%.2f, %.2f) %.2f" % (x, y, theta))
 
             fear_factors = self._vis_state.get_fear_factors()
-            if feedforward_agc_cc is not None:
+            if fear_factors is not None:
                 ff = fear_factors[self._robot_name]
                 qp.drawText(-30, 25, "ff: %.2f" % (fear_factors[robot_name]))
 

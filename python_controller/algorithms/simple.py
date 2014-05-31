@@ -23,12 +23,14 @@ class SimpleAlgorithm(AbstractAlgorithm):
         self._logger.info("Simple algorithm started")
 
         self._target = None
+        self._target_reached = False
         self._last_params = None
 
     def reset(self):
         super(SimpleAlgorithm, self).reset()
 
         self._target = None
+        self._target_reached = False
         self._last_params = None
 
     def _loop(self):
@@ -37,14 +39,16 @@ class SimpleAlgorithm(AbstractAlgorithm):
     def _navigate(self):
         dist = None
 
-        while True:
-            if self._target is not None:
-                dist = self._target_distance()
-                if dist >= 0.05:
-                    break
+        if self._target is None:
+            self._target = self._controller.get_new_target()
 
-            self._controller.obtain_new_target()
-            self._target = self._controller.get_target()
+        if not self._target_reached and self._target_distance() < 0.1:
+            new_target = self._controller.get_new_target()
+            if new_target != self._target:
+                self._target = new_target
+            else:
+                self._target_reached = True
+                self._logger.info("Target reached")
 
         x = self._own_robot['x']
         y = self._own_robot['y']
@@ -70,6 +74,9 @@ class SimpleAlgorithm(AbstractAlgorithm):
 
             if target_dist < 0.5:
                 v *= target_dist
+
+            if target_dist < 0.2:
+                v = 0
 
             Vl, Vr = SimpleAlgorithm._get_wheel_speeds(v, omega)
 

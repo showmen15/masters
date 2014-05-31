@@ -10,6 +10,7 @@ import cPickle
 import numpy
 import random
 import atexit
+import json
 from robot_model import State
 from algorithms.simple import SimpleAlgorithm
 from algorithms.go_and_turn import GoAndTurn
@@ -35,6 +36,8 @@ class Controller:
         self._algorithm = algorithm(self, robot_name)
         self._robot_name = robot_name
         self._target = None
+        self._randomize_target = True
+        self._roson = None
 
         if True:
             self._samples_file = open("/tmp/%s.samples" % (self._robot_name, ), 'w')
@@ -117,10 +120,14 @@ class Controller:
     def send_vis_update(self, vis_state):
         self._vis_client.send_update(vis_state)
 
-    def get_target(self):
-        return self._target
+    def get_new_target(self):
+        if self._randomize_target:
+            self._randomize_new_target()
 
-    def obtain_new_target(self):
+        target = self._target
+        return target
+
+    def _randomize_new_target(self):
         target_x = random.uniform(self.MIN_X + self.WALL_OFFSET,
                                   self.MIN_X + self.WORLD_WIDTH - self.WALL_OFFSET)
 
@@ -128,12 +135,30 @@ class Controller:
                                   self.MIN_Y + self.WORLD_HEIGHT - self.WALL_OFFSET)
 
         self._target = (target_x, target_y)
-        self._logger.info("New target obtained: %s",
-                          (self._target, ))
+        self._logger.info("New target randomized: %s" % (self._target, ))
 
         if self._samples_file is not None:
             self._save_sample(('target', self._target), )
 
+    def set_roson(self, roson):
+        self._roson = roson
+        self._obtain_roson_target()
+
+    def _obtain_roson_target(self):
+        for robot in self._roson['robots']:
+            if robot['id'] == self._robot_name:
+                my_robot = robot
+
+                if 'target' in my_robot:
+                    self._target = (my_robot['target']['x'], my_robot['target']['y'])
+                    self._randomize_target = False
+
+                    self._logger.info("Roson target obtained: %s" % (self._target, ))
+
+                    if self._samples_file is not None:
+                        self._save_sample(('target', self._target), )
+
+                break
 
     def _save_sample(self, sample):
         if self._samples_file is not None:
@@ -158,12 +183,17 @@ if __name__ == "__main__":
     numpy.seterrcall=log_numpy_errors
     numpy.seterr(all='call')
 
-    if len(sys.argv) != 2:
+    if len(sys.argv) not in [2, 3]:
         logger.fatal("Wrong number of arguments. Exiting.")
         sys.exit(0)
 
     robot_name = sys.argv[1]
-    controller = Controller(robot_name, FearfulAlgorithm)
+    controller = Controller(robot_name, SimpleAlgorithm)
+
+    if len(sys.argv) == 3:
+        roson_file = open(sys.argv[2])
+        roson = json.load(roson_file)
+        controller.set_roson(roson)
 
     @atexit.register
     def exit_handler():

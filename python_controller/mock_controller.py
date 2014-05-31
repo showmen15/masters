@@ -9,6 +9,7 @@ import cPickle
 import numpy
 from algorithms.simple import SimpleAlgorithm
 from algorithms.go_and_turn import GoAndTurn
+from algorithms.fearful import FearfulAlgorithm
 from robot_vis.client import RobotVisClient
 from collections import deque
 
@@ -55,10 +56,11 @@ class MockController:
     def send_vis_update(self, vis_state):
         self._vis_client.send_update(vis_state)
 
-    def get_target(self):
+    def get_new_target(self):
+        self._obtain_new_target()
         return self._target
 
-    def obtain_new_target(self):
+    def _obtain_new_target(self):
         try:
             self._target = self._targets.popleft()
         except IndexError:
@@ -106,7 +108,7 @@ if __name__ == "__main__":
     robot_name = sys.argv[1]
     samples_file = sys.argv[2]
 
-    controller = MockController(samples_file, robot_name, SimpleAlgorithm)
+    controller = MockController(samples_file, robot_name, FearfulAlgorithm)
 
     #import cProfile
     #cProfile.run('controller.loop()', '/tmp/profile.out')
