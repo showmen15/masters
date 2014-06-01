@@ -1,0 +1,121 @@
+{
+  "walls": [
+    {
+      "type": "wall",
+      "id": "Wall16",
+      "width": 0.1,
+      "height": 2.0,
+      "color": "80003366",
+      "from": {
+        "x": -5.0,
+        "y": 5.0
+      },
+      "to": {
+        "x": 5.0,
+        "y": 5.0
+      }
+    },
+    {
+      "type": "wall",
+      "id": "Wall17",
+      "width": 0.1,
+      "height": 2.0,
+      "color": "80003366",
+      "from": {
+        "x": -5.0,
+        "y": -5.0
+      },
+      "to": {
+        "x": 5.0,
+        "y": -5.0
+      }
+    },
+    {
+      "type": "wall",
+      "id": "Wall18",
+      "width": 0.1,
+      "height": 2.0,
+      "color": "80003366",
+      "from": {
+        "x": 0.0,
+        "y": 0.0
+      },
+      "to": {
+        "x": 10.0,
+        "y": 0.0
+      }
+    },
+    {
+      "type": "wall",
+      "id": "Wall19",
+      "width": 0.1,
+      "height": 2.0,
+      "color": "80003366",
+      "from": {
+        "x": -10.0,
+        "y": 0.0
+      },
+      "to": {
+        "x": 0.0,
+        "y": 0.0
+      }
+    }
+  ],
+  "gates": [],
+  "spaces": [],
+  "nodes": [],
+  "robots": [
+    {
+      "type": "robot",
+      "id": "Robot20",
+      "kind": "RobotCar",
+      "location": {
+        "x": 4.5,
+        "y": 4.5,
+        "z": 1.0,
+        "alpha": 0.0001
+      }
+    },
+    {
+      "type": "robot",
+      "id": "Robot21",
+      "kind": "RobotCar",
+      "location": {
+        "x": -4.5,
+        "y": 4.5,
+        "z": 1.0,
+        "alpha": 0.0001
+      }
+    },
+    {
+      "type": "robot",
+      "id": "Robot22",
+      "kind": "RobotCar",
+      "location": {
+        "x": -4.5,
+        "y": -4.5,
+        "z": 1.0,
+        "alpha": 0.0001
+      }
+    },
+    {
+      "type": "robot",
+      "id": "Robot23",
+      "kind": "RobotCar",
+      "location": {
+        "x": 4.5,
+        "y": -4.5,
+        "z": 1.0,
+        "alpha": 0.0001
+      }
+    }
+  ],
+  "victims": [],
+  "space-walls": [],
+  "space-gates": [],
+  "space-nodes": [],
+  "space-robots": [],
+  "space-victims": [],
+  "gate-nodes": [],
+  "node-nodes": []
+}

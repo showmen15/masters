@@ -8,15 +8,7 @@ from gnuradio.analog.analog_swig import feedforward_agc_cc
 
 
 class VisWindow(QtGui.QWidget):
-
-    MAX_X = 11
-    MIN_X = -1
-
-    MAX_Y = 11
-    MIN_Y = -1
-
-    WIDTH = abs(MAX_X - MIN_X)
-    HEIGHT = abs(MAX_Y - MIN_Y)
+    WINDOW_MARGIN = 1.0
 
     WINDOW_WIDTH = 400
     WINDOW_HEIGHT = 400
@@ -25,10 +17,21 @@ class VisWindow(QtGui.QWidget):
 
     CIRCLE_SIZE = 15
 
-    def __init__(self, robot_name):
+    def __init__(self, robot_name, walls, bounds):
         super(VisWindow, self).__init__()
 
         self._robot_name = robot_name
+        self._walls = walls
+        (self._min_x, self._min_y), (self._max_x, self._max_y) = bounds
+
+        self._min_x -= self.WINDOW_MARGIN
+        self._max_x += self.WINDOW_MARGIN
+        self._min_y -= self.WINDOW_MARGIN
+        self._max_y += self.WINDOW_MARGIN
+
+        self._width = abs(self._max_x - self._min_x)
+        self._height = abs(self._max_y - self._min_y)
+
         self._vis_state = None
         self._colors = {}
 
@@ -47,6 +50,7 @@ class VisWindow(QtGui.QWidget):
         qp.end()
 
     def redraw(self, qp):
+        self._draw_walls(qp)
         self._draw_robots(qp)
         self._draw_circles(qp)
         self._draw_target(qp)
@@ -57,6 +61,14 @@ class VisWindow(QtGui.QWidget):
         self._vis_state = vis_state
         self._update_colors()
         self.update()
+
+    def _draw_walls(self, qp):
+        for (x1, y1), (x2, y2) in self._walls:
+            wx1, wy1 = self._window_location(x1, y1)
+            wx2, wy2 = self._window_location(x2, y2)
+
+            qp.setPen(QtCore.Qt.black)
+            qp.drawLine(wx1, wy1, wx2, wy2)
 
     def _update_colors(self):
         for robot_name in self._vis_state.get_state().keys():
@@ -141,7 +153,7 @@ class VisWindow(QtGui.QWidget):
     def _window_location(self, x, y):
         size = self.size()
 
-        win_x = ((x - self.MIN_X) / self.WIDTH) * size.width()
-        win_y = ((y - self.MIN_Y) / self.HEIGHT) * size.height()
+        win_x = ((x - self._min_x) / self._width) * size.width()
+        win_y = ((y - self._min_y) / self._height) * size.height()
 
         return int(win_x), int(win_y)

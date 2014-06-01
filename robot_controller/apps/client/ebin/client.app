@@ -6,7 +6,7 @@
               {mod,{client_app,[]}},
               {env,[{client_path,"../python_controller/"},
                     {client_command,"controller.py"},
-                    {roson_dir,"../roboss_interface/models/"},
+                    {roson_dir,"../models/"},
                     {roboss_node,roboss@rose}]},
               {modules,[client_app,client_clients_sup,client_controller,
                         client_controllers_sup,client_pb,client_serv,

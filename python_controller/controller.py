@@ -20,8 +20,8 @@ from robot_vis.client import RobotVisClient
 
 class Controller:
 
-    MIN_X = -5.0
-    MIN_Y = -5.0
+    MIN_X = 0.0
+    MIN_Y = 0.0
 
     WORLD_WIDTH = 10.0
     WORLD_HEIGHT = 10.0
