@@ -7,6 +7,7 @@ import logging.config
 import traceback
 import cPickle
 import numpy
+import json
 from algorithms.simple import SimpleAlgorithm
 from algorithms.go_and_turn import GoAndTurn
 from algorithms.fearful import FearfulAlgorithm
@@ -23,11 +24,11 @@ class MockController:
 
     WALL_OFFSET = 1.0
 
-    def __init__(self, samples_file, robot_name, algorithm):
+    def __init__(self, samples_file, robot_name, algorithm, roson):
         self._logger = logging.getLogger(robot_name)
         self._logger.info("Controller started")
 
-        self._algorithm = algorithm(self, robot_name)
+        self._algorithm = algorithm(self, robot_name, roson)
         self._robot_name = robot_name
 
         self._states = None
@@ -101,14 +102,19 @@ if __name__ == "__main__":
     numpy.seterrcall=log_numpy_errors
     numpy.seterr(all='call')
 
-    if len(sys.argv) != 3:
+    if len(sys.argv) != 4:
         logger.fatal("Wrong number of arguments. Exiting.")
         sys.exit(0)
 
     robot_name = sys.argv[1]
-    samples_file = sys.argv[2]
+    roson_filename = sys.argv[2]
+    samples_file = sys.argv[3]
 
-    controller = MockController(samples_file, robot_name, FearfulAlgorithm)
+    robot_name = sys.argv[1]
+    roson_file = open(roson_filename)
+    roson = json.load(roson_file)
+
+    controller = MockController(samples_file, robot_name, FearfulAlgorithm, roson)
 
     #import cProfile
     #cProfile.run('controller.loop()', '/tmp/profile.out')

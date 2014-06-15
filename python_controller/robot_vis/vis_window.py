@@ -10,9 +10,6 @@ from gnuradio.analog.analog_swig import feedforward_agc_cc
 class VisWindow(QtGui.QWidget):
     WINDOW_MARGIN = 1.0
 
-    WINDOW_WIDTH = 400
-    WINDOW_HEIGHT = 400
-
     CROSS_HALF_SIZE = 8
 
     CIRCLE_SIZE = 15
@@ -32,6 +29,9 @@ class VisWindow(QtGui.QWidget):
         self._width = abs(self._max_x - self._min_x)
         self._height = abs(self._max_y - self._min_y)
 
+        self._window_width = 400
+        self._window_height = self._height / self._width * self._window_width
+
         self._vis_state = None
         self._colors = {}
 
@@ -39,7 +39,7 @@ class VisWindow(QtGui.QWidget):
 
     def initUI(self):
 
-        self.setGeometry(300, 300, self.WINDOW_WIDTH, self.WINDOW_HEIGHT)
+        self.setGeometry(300, 300, self._window_width, self._window_height)
         self.setWindowTitle(self._robot_name)
         self.show()
 

@@ -2,7 +2,7 @@
   "walls": [
     {
       "type": "wall",
-      "id": "Wall0",
+      "id": "Wall24",
       "width": 0.1,
       "height": 2.0,
       "color": "80003366",
@@ -17,7 +17,22 @@
     },
     {
       "type": "wall",
-      "id": "Wall1",
+      "id": "Wall25",
+      "width": 0.1,
+      "height": 2.0,
+      "color": "80003366",
+      "from": {
+        "x": 10.0,
+        "y": 0.0
+      },
+      "to": {
+        "x": 10.0,
+        "y": 10.0
+      }
+    },
+    {
+      "type": "wall",
+      "id": "Wall26",
       "width": 0.1,
       "height": 2.0,
       "color": "80003366",
@@ -32,38 +47,44 @@
     },
     {
       "type": "wall",
-      "id": "Wall2",
+      "id": "Wall27",
       "width": 0.1,
       "height": 2.0,
       "color": "80003366",
       "from": {
-        "x": 5.0,
-        "y": 5.0
+        "x": 0.0,
+        "y": 0.0
       },
       "to": {
-        "x": 15.0,
-        "y": 5.0
-      }
-    },
-    {
-      "type": "wall",
-      "id": "Wall3",
-      "width": 0.1,
-      "height": 2.0,
-      "color": "80003366",
-      "from": {
-        "x": -5.0,
-        "y": 5.0
-      },
-      "to": {
-        "x": 5.0,
-        "y": 5.0
+        "x": 0.0,
+        "y": 10.0
       }
     }
   ],
   "gates": [],
-  "spaces": [],
-  "nodes": [],
+  "spaces": [
+    {
+      "type": "space",
+      "id": "Space28",
+      "kind": "room",
+      "name": null,
+      "function": null,
+      "expectedPersonCount": 96,
+      "area": 100.0,
+      "diameter": 14.142135623730951
+    }
+  ],
+  "nodes": [
+    {
+      "type": "node",
+      "id": "Node29",
+      "kind": "spaceNode",
+      "position": {
+        "x": 5.0000000000000009,
+        "y": 5.0000000000000009
+      }
+    }
+  ],
   "robots": [
     {
       "type": "robot",
@@ -108,7 +129,7 @@
       "target": {
         "x": 6.0,
         "y": 0.5
-      }      
+      }
     },
     {
       "type": "robot",
@@ -155,13 +176,70 @@
         "y": 9.5
       }
     }
-
   ],
   "victims": [],
-  "space-walls": [],
+  "space-walls": [
+    {
+      "type": "space-wall",
+      "spaceId": "Space28",
+      "wallId": "Wall24"
+    },
+    {
+      "type": "space-wall",
+      "spaceId": "Space28",
+      "wallId": "Wall25"
+    },
+    {
+      "type": "space-wall",
+      "spaceId": "Space28",
+      "wallId": "Wall26"
+    },
+    {
+      "type": "space-wall",
+      "spaceId": "Space28",
+      "wallId": "Wall27"
+    }
+  ],
   "space-gates": [],
-  "space-nodes": [],
-  "space-robots": [],
+  "space-nodes": [
+    {
+      "type": "space-node",
+      "spaceId": "Space28",
+      "nodeId": "Node29"
+    }
+  ],
+  "space-robots": [
+    {
+      "type": "space-robot",
+      "spaceId": "Space28",
+      "robotId": "Robot18"
+    },
+    {
+      "type": "space-robot",
+      "spaceId": "Space28",
+      "robotId": "Robot19"
+    },
+    {
+      "type": "space-robot",
+      "spaceId": "Space28",
+      "robotId": "Robot20"
+    },
+    {
+      "type": "space-robot",
+      "spaceId": "Space28",
+      "robotId": "Robot21"
+    },
+    {
+      "type": "space-robot",
+      "spaceId": "Space28",
+      "robotId": "Robot22"
+    },
+    {
+      "type": "space-robot",
+      "spaceId": "Space28",
+      "robotId": "Robot23"
+    }
+  ],
   "space-victims": [],
   "gate-nodes": [],
   "node-nodes": []

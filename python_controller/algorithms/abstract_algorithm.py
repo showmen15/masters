@@ -2,7 +2,9 @@ __author__ = 'michal'
 
 import logging
 import math
+import time
 
+from collections import deque
 from robot_model import VisState
 from robot_command import RobotCommand
 from utils.time_utils import TimeUtil
@@ -11,11 +13,13 @@ from kalman.location_kalman import LocationKalman
 from kalman.angle_kalman import AngleKalman
 
 
+
 class AbstractAlgorithm(object):
     SAVE_STATES = True
 
     INTERVAL = 0.02 #s
     MEASURE_STEPS = 50 * 5 # 5s
+    AVG_TIMES_NUM = 10
 
     def __init__(self, controller, robot_name):
         self._logger = logging.getLogger(robot_name)
@@ -57,17 +61,48 @@ class AbstractAlgorithm(object):
         self._running = False
 
     def loop(self):
+
+        update_state_times = deque(maxlen=self.AVG_TIMES_NUM)
+        predict_times = deque(maxlen=self.AVG_TIMES_NUM)
+        #loop_times = deque(maxlen=self.AVG_TIMES_NUM)
+        send_vis_times = deque(maxlen=self.AVG_TIMES_NUM)
+
+        update_state_avg = 0.0
+        predict_avg = 0.0
+        #loop_avg = 0.0
+        send_vis_avg = 0.0
+
         while True:
             self._time_util.start_step()
 
-            if self._update_states():
+            t1 = time.time()
+            state_changed = self._update_states()
+            t2 = time.time()
+            update_state_times.appendleft(t2 - t1)
+            update_state_avg = sum(update_state_times) / float(len(update_state_times))
+
+            if state_changed:
+
                 self._predict()
-                self._loop()
+                t3 = time.time()
+                predict_times.appendleft(t3 - t2)
+                predict_avg = sum(predict_times) / float(len(predict_times))
+
+
+                avail_time = max(0.0, self.INTERVAL - update_state_avg - predict_avg - send_vis_avg)
+                self._loop(avail_time)
+                t4 = time.time()
+                #loop_times.appendleft(t3 - t2)
+                #loop_avg = sum(loop_times) / float(len(loop_times))
+
                 self._send_vis_state()
+                t5 = time.time()
+                send_vis_times.appendleft(t5 - t4)
+                send_vis_avg = sum(send_vis_times) / float(len(send_vis_times))
 
             self._time_util.start_sleep()
 
-    def _loop(self):
+    def _loop(self, avail_time):
         raise NotImplemented()
 
     @staticmethod
@@ -84,7 +119,9 @@ class AbstractAlgorithm(object):
             states_to_send[robot_name] = (state['x'], state['y'], state['theta'])
 
         vis_state = VisState(self._robot_name, states_to_send)
-        vis_state.set_target(self._target)
+        if type(self._target) == type([]) and len(self._target) > 0:
+            vis_state.set_target(self._target[0])
+
         vis_state.set_predictions(self._predictions)
 
         self._modify_vis_state(vis_state)

@@ -28,24 +28,26 @@ class Controller:
 
     WALL_OFFSET = 1.0
 
-    def __init__(self, robot_name, algorithm):
+    def __init__(self, robot_name, algorithm, roson):
         self._logger = logging.getLogger(robot_name)
         self._logger.info("Controller started")
 
-        self._port = ErlangPort(self._logger)
-        self._algorithm = algorithm(self, robot_name)
         self._robot_name = robot_name
+        self._roson = roson
+        self._port = ErlangPort(self._logger)
+        self._algorithm = algorithm(self, robot_name, roson)
+
         self._target = None
         self._randomize_target = True
-        self._roson = None
 
-        if False:
+        if True:
             self._samples_file = open("/tmp/%s.samples" % (self._robot_name, ), 'w')
         else:
             self._samples_file = None
 
         self._vis_client = RobotVisClient("127.0.0.1", 9010)
 
+        self._parse_roson()
         self.send_ack()
 
     def send_ack(self):
@@ -140,8 +142,7 @@ class Controller:
         if self._samples_file is not None:
             self._save_sample(('target', self._target), )
 
-    def set_roson(self, roson):
-        self._roson = roson
+    def _parse_roson(self):
         self._obtain_roson_target()
 
     def _obtain_roson_target(self):
@@ -183,17 +184,15 @@ if __name__ == "__main__":
     numpy.seterrcall=log_numpy_errors
     numpy.seterr(all='call')
 
-    if len(sys.argv) not in [2, 3]:
+    if len(sys.argv) != 3:
         logger.fatal("Wrong number of arguments. Exiting.")
         sys.exit(0)
 
     robot_name = sys.argv[1]
-    controller = Controller(robot_name, FearfulAlgorithm)
+    roson_file = open(sys.argv[2])
+    roson = json.load(roson_file)
 
-    if len(sys.argv) == 3:
-        roson_file = open(sys.argv[2])
-        roson = json.load(roson_file)
-        controller.set_roson(roson)
+    controller = Controller(robot_name, FearfulAlgorithm, roson)
 
     @atexit.register
     def exit_handler():
