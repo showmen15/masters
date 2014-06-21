@@ -21,7 +21,7 @@ class MeasurementUtils:
 
     @staticmethod
     def normalize_angle(angle):
-        if abs(angle) > math.pi:
+        while abs(angle) > math.pi:
             angle -= math.copysign(2.0 * math.pi, angle)
 
         return angle

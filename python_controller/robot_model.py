@@ -58,6 +58,7 @@ class VisState:
         self._variables = {}
         self._predictions = None
         self._fear_factors = None
+        self._yield_set = set()
 
     def get_state(self):
         return self._state
@@ -88,3 +89,9 @@ class VisState:
 
     def get_fear_factors(self):
         return self._fear_factors
+
+    def set_yield_set(self, yield_set):
+        self._yield_set = yield_set
+
+    def get_yield_set(self):
+        return self._yield_set

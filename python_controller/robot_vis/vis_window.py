@@ -77,7 +77,9 @@ class VisWindow(QtGui.QWidget):
             else:
                 fear_factors = self._vis_state.get_fear_factors()
                 if fear_factors is not None:
-                    if fear_factors[robot_name] > fear_factors[self._robot_name]:
+                    if robot_name in self._vis_state.get_yield_set():
+                        color = QtCore.Qt.darkMagenta
+                    elif fear_factors[robot_name] > fear_factors[self._robot_name]:
                         color = QtCore.Qt.red
                     else:
                         color = QtCore.Qt.darkGreen
