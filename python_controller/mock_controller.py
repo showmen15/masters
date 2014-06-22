@@ -42,7 +42,7 @@ class MockController:
     def loop(self):
         self._algorithm.loop()
 
-    def send_robot_command(self, robot_command):
+    def send_robot_command(self, robot_command, fear_factor):
         pass
 
     def send_request_state(self):

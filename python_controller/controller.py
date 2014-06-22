@@ -58,7 +58,7 @@ class Controller:
     def loop(self):
         self._algorithm.loop()
 
-    def send_robot_command(self, robot_command):
+    def send_robot_command(self, robot_command, fear_factor):
         cmd_msg = client_pb2.CommandMessage()
         cmd_msg.type = client_pb2.CommandMessage.ROBOT_COMMAND
         rc = cmd_msg.robotCommand
@@ -66,6 +66,7 @@ class Controller:
         rc.frontRight = robot_command.get_front_right()
         rc.rearLeft = robot_command.get_rear_left()
         rc.rearRight = robot_command.get_rear_right()
+        rc.fearFactor = fear_factor
 
         if self._logger.isEnabledFor('DEBUG'):
             self._logger.debug("Sending RobotCommand, fl=%d, fr=%d, rl=%f, rr=%d"

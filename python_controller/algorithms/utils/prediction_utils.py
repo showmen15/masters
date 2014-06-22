@@ -2,6 +2,7 @@ __author__ = 'michal'
 
 import math
 from robot_model import RobotConstants
+from measurement_utils import MeasurementUtils
 
 
 class PredictionUtils:
@@ -85,5 +86,10 @@ class PredictionUtils:
         dy = z * math.cos(angle)
 
         circles = [(x + dx * i, y + dy * i) for i in range(PredictionUtils.CIRCLES_NUM)]
+
+        dff = abs(MeasurementUtils.angle(circles[0][0], circles[0][1], circles[1][0], circles[1][1]) - angle)
+        if speed != 0.0 and dff > 0.01:
+            pass
+
         return circles
 

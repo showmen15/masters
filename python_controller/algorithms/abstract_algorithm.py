@@ -34,6 +34,7 @@ class AbstractAlgorithm(object):
         self._own_robot = None
         self._running = True
         self._variables = {}
+        self._own_fear_factor = 0.0
 
         if self.SAVE_STATES:
             self._f = open("/tmp/%s.states" % (self._robot_name, ), 'w')
@@ -51,6 +52,7 @@ class AbstractAlgorithm(object):
         self._own_robot = None
         self._running = True
         self._variables = {}
+        self._own_fear_factor = 0.0
 
     def start(self):
         self._logger.info("Start")
@@ -105,12 +107,11 @@ class AbstractAlgorithm(object):
     def _loop(self, avail_time):
         raise NotImplemented()
 
-    @staticmethod
-    def get_ff(robot_name):
-        return 1.0 + int(robot_name[5:])/100.0
-
     def _send_stop_command(self):
-        self._controller.send_robot_command(RobotCommand(0, 0, 0, 0))
+        self._send_robot_command(RobotCommand(0, 0, 0, 0))
+
+    def _send_robot_command(self, robot_command):
+        self._controller.send_robot_command(robot_command, self._own_fear_factor)
 
     def _send_vis_state(self):
 
@@ -145,6 +146,7 @@ class AbstractAlgorithm(object):
             org_y = new_state.get_y()
             org_theta = new_state.get_theta()
             timestamp = new_state.get_timestamp()
+            fear_factor = new_state.get_fear_factor()
 
             if robot_name not in self._states:
                 location_kalman = LocationKalman(org_x, org_y, self.INTERVAL)
@@ -160,7 +162,8 @@ class AbstractAlgorithm(object):
                          'v': 0.0,
                          'theta': org_theta,
                          'omega': 0.0,
-                         'epsilon': 0.0}
+                         'epsilon': 0.0,
+                         'fear_factor': fear_factor}
 
                 self._states[robot_name] = state
 
@@ -190,6 +193,7 @@ class AbstractAlgorithm(object):
             state['omega'] = omega
             state['epsilon'] = epsilon
             state['timestamp'] = timestamp
+            state['fear_factor'] = fear_factor
 
             if self._f is not None and robot_name == self._robot_name:
                 self._f.write("%i %f %f %f %f %f %f %f %f\n" %

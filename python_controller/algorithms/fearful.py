@@ -17,36 +17,40 @@ class FearfulAlgorithm(AbstractAlgorithm):
     CIRCLES_RADIUS = 0.5
     VARIANTS_MAX_TIME = 0.015
     FF_RADIUS = 2.0
-    YIELD_DELAY = 1.0 * 1000 * 1000
+    YIELD_DELAY = 3 * 1000 * 1000
     RUNAWAY_TIME = 10000.0 * 1000 * 1000
 
     def __init__(self, controller, robot_name, roson):
         super(FearfulAlgorithm, self).__init__(controller, robot_name)
         self._logger.info("Simple algorithm started")
 
+        self._INITIAL_FEAR_FACTOR = 1.0 + int(robot_name[5:])/100.0
+
         self._target = None
         self._target_reached = False
         self._last_params = None
         self._maze_util = MazeUtil(roson)
+        self._space_id = None
 
         self._fear_factors = None
         self._yield_timestamps = {}
         self._yield_set = set()
-        self._runaway_timestamps = {}
 
+        self._own_fear_factor = self._INITIAL_FEAR_FACTOR
 
     def reset(self):
         super(FearfulAlgorithm, self).reset()
 
         self._target = None
         self._target_reached = False
-
         self._last_params = None
+        self._space_id = None
 
         self._fear_factors = None
         self._yield_timestamps = {}
         self._yield_set = set()
-        self._runaway_timestamps = {}
+
+        self._own_fear_factor = self._INITIAL_FEAR_FACTOR
 
     def _loop(self, avail_time):
         self._compute_fear_factors()
@@ -59,8 +63,7 @@ class FearfulAlgorithm(AbstractAlgorithm):
             x = state['x']
             y = state['y']
             theta = state['theta']
-
-            ff = AbstractAlgorithm.get_ff(robot_name)
+            fear_factor = state['fear_factor']
 
             for robot_name2, state2 in self._states.items():
                 if robot_name == robot_name2:
@@ -79,13 +82,13 @@ class FearfulAlgorithm(AbstractAlgorithm):
                 if angle_diff > 0.5 * math.pi:
                     continue
 
-                ff += (1 - dist / FearfulAlgorithm.FF_RADIUS) * math.cos(angle_diff) * AbstractAlgorithm.get_ff(robot_name2)
+                fear_factor += (1 - dist / FearfulAlgorithm.FF_RADIUS) * math.cos(angle_diff) \
+                    * self._states[robot_name]['fear_factor']
 
-            self._fear_factors[robot_name] = ff
+            self._fear_factors[robot_name] = fear_factor
 
     def _modify_vis_state(self, vis_state):
         vis_state.set_fear_factors(self._fear_factors)
-        vis_state.set_yield_set(self._yield_set)
 
     def _navigate(self, avail_time):
         dist = None
@@ -112,6 +115,13 @@ class FearfulAlgorithm(AbstractAlgorithm):
                     self._target_reached = True
                     self._logger.info("Target reached")
 
+        space_id = self._maze_util.find_space_by_point((x, y))
+        if space_id != self._space_id:
+            if self._space_id is not None:
+                tx, ty = self._target[-1]
+                self._target = self._maze_util.find_path((x, y), (tx, ty))
+
+            self._space_id = space_id
 
 
         if self._avoid_close_objects(x, y, theta):
@@ -130,9 +140,7 @@ class FearfulAlgorithm(AbstractAlgorithm):
         target_dist = MeasurementUtils.distance(x, y, tx, ty)
 
         if not self._find_intersections(preds, self.CIRCLES_RADIUS * 1.5, 0):
-            self._yield_set.clear()
-            self._runaway_timestamps.clear()
-            self._yield_timestamps.clear()
+            self._own_fear_factor = self._INITIAL_FEAR_FACTOR
 
             v, omega = FearfulAlgorithm._navigate_fun(v, theta, bearing, False)
 
@@ -144,10 +152,16 @@ class FearfulAlgorithm(AbstractAlgorithm):
 
             Vl, Vr = FearfulAlgorithm._get_wheel_speeds(v, omega)
 
-            self._controller.send_robot_command(
+            self._send_robot_command(
                 RobotCommand(Vl, Vr, Vl, Vr))
 
             return
+
+        for robot_name in list(self._yield_set):
+            rx = self._states[robot_name]['x']
+            ry = self._states[robot_name]['y']
+            if MeasurementUtils.distance(x, y, rx, ry) > 2.0:
+                self._yield_set.remove(robot_name)
 
         best_v = None
         best_bearing = None
@@ -171,7 +185,6 @@ class FearfulAlgorithm(AbstractAlgorithm):
                 best_rate = None
                 best_preds = None
 
-
         try_stop = True
 
         variants_stop_time = time.time() + avail_time - 0.001
@@ -189,23 +202,21 @@ class FearfulAlgorithm(AbstractAlgorithm):
                 rand_bearing = random.uniform(-math.pi, math.pi)
                 rand_radius = random.uniform(0.0, self.CRUISE_SPEED * PredictionUtils.CIRCLES_DELTA * PredictionUtils.CIRCLES_NUM)
 
-            mp_x = rand_radius * math.cos(rand_bearing)
-            mp_y = rand_radius * math.sin(rand_bearing)
+            mp_x = rand_radius * math.cos(rand_bearing) + x
+            mp_y = rand_radius * math.sin(rand_bearing) + y
             rand_midpoint = mp_x, mp_y
 
             rand_preds = PredictionUtils.predict_positions(x, y, rand_v, rand_bearing, 0.0)
             rand_preds = FearfulAlgorithm._cut_predictions(rand_preds, rand_midpoint)
             rand_rate = self._rate_predictions(rand_preds)
 
-            if self._find_intersections(rand_preds, self.CIRCLES_RADIUS * 2, 1):
+            if self._find_intersections(rand_preds, self.CIRCLES_RADIUS * 1.5, 1):
                 continue
 
             if best_rate is None or rand_rate < best_rate - 0.5:
                 best_v, best_bearing, best_preds, best_rate, best_midpoint \
                     = rand_v, rand_bearing, rand_preds, rand_rate, rand_midpoint
                 self._last_params = best_v, best_bearing, best_midpoint
-
-
 
         if best_preds is None:
             self._send_stop_command()
@@ -219,30 +230,33 @@ class FearfulAlgorithm(AbstractAlgorithm):
             mp_x, mp_y = best_midpoint
             midpoint_dist = MeasurementUtils.distance(x, y, mp_x, mp_y)
 
+
             if midpoint_dist < 0.5:
                 best_v *= midpoint_dist
 
             Vl, Vr = FearfulAlgorithm._get_wheel_speeds(best_v, omega)
 
-            self._controller.send_robot_command(
+            self._send_robot_command(
                 RobotCommand(Vl, Vr, Vl, Vr))
 
     def _avoid_close_objects(self, x, y, theta):
         distances = self._distances_to_robots()
-        distances = filter(lambda (r, d): d < FearfulAlgorithm.CIRCLES_RADIUS * 2.0, distances)
 
         new_yield_timestamps = {}
 
-        for robot_name, distance in distances:
-            if self._fear_factors[self._robot_name] > self._fear_factors[robot_name]:
-                if robot_name not in self._yield_set:
+        if self._own_robot['v'] <= 0.1:
+            for robot_name, distance in distances:
+                if distance > FearfulAlgorithm.CIRCLES_RADIUS * 2.0:
+                    break
+
+                if self._fear_factors[self._robot_name] > self._fear_factors[robot_name]:
                     if robot_name not in self._yield_timestamps:
                         new_yield_timestamps[robot_name] = self._own_robot['timestamp'] + self.YIELD_DELAY
                     else:
                         timestamp = self._yield_timestamps[robot_name]
                         if self._own_robot['timestamp'] > timestamp:
                             self._yield_set.add(robot_name)
-                            self._runaway_timestamps[robot_name] = self._own_robot['timestamp'] + self.RUNAWAY_TIME
+                            self._own_fear_factor = self._states[robot_name]['fear_factor'] - 0.1
                         else:
                             new_yield_timestamps[robot_name] = timestamp
 
@@ -250,32 +264,23 @@ class FearfulAlgorithm(AbstractAlgorithm):
 
         bearings = set()
 
-        for robot_name, timestamp in self._runaway_timestamps.items():
-            if self._own_robot['timestamp'] > timestamp:
-                del self._runaway_timestamps[robot_name]
-            else:
-                state = self._states[robot_name]
-                rx = state['x']
-                ry = state['y']
-
-                bearing_to_robot = MeasurementUtils.angle(x, y, rx, ry)
-                bearings.add(bearing_to_robot)
-
         for robot_name, distance in distances:
-            if self._fear_factors[self._robot_name] < self._fear_factors[robot_name] or \
-                    robot_name in self._yield_set:
+            if distance > FearfulAlgorithm.CIRCLES_RADIUS * 1:
+                break
+
+            if self._fear_factors[self._robot_name] < self._fear_factors[robot_name]:
 
                 state = self._states[robot_name]
                 rx = state['x']
                 ry = state['y']
 
                 bearing_to_robot = MeasurementUtils.angle(x, y, rx, ry)
-                bearings.add(bearing_to_robot)
+                #bearings.add(bearing_to_robot)
             else:
                 self._send_stop_command()
                 return True
 
-        for wx, wy in self._maze_util.get_close_walls_points(x, y, FearfulAlgorithm.CIRCLES_RADIUS * 0.7):
+        for wx, wy in self._maze_util.get_close_walls_points(x, y, 0.25):
             bearing_to_wall = MeasurementUtils.angle(x, y, wx, wy)
             bearings.add(bearing_to_wall)
 
@@ -303,7 +308,7 @@ class FearfulAlgorithm(AbstractAlgorithm):
 
         Vl, Vr = FearfulAlgorithm._get_wheel_speeds(v, omega)
 
-        self._controller.send_robot_command(
+        self._send_robot_command(
             RobotCommand(Vl, Vr, Vl, Vr))
 
         return True
@@ -360,8 +365,8 @@ class FearfulAlgorithm(AbstractAlgorithm):
 
         for i in range(len(predictions)):
             (px, py) = predictions[i]
-            if MeasurementUtils.distance(px, py, tx, ty) < 0.3:
-                return predictions[:i+1] + [(tx, ty)] * (len(predictions) - i + 1)
+            if MeasurementUtils.distance(px, py, tx, ty) < 0.2:
+                return predictions[:i+1] + [(px, py)] * (len(predictions) - i - 1)
 
         return predictions
 
@@ -387,10 +392,17 @@ class FearfulAlgorithm(AbstractAlgorithm):
     def _rate_predictions(self, predictions):
         assert len(predictions) > 0
 
-        (tx, ty) = self._target[0]
         (px, py) = predictions[-1]
 
-        return MeasurementUtils.distance(px, py, tx, ty)
+        if len(self._yield_set) > 0:
+            robot_name = list(self._yield_set)[0]
+            rx = self._states[robot_name]['x']
+            ry = self._states[robot_name]['y']
+
+            return 1.0 - MeasurementUtils.distance(px, py, rx, ry) / (self.CRUISE_SPEED * PredictionUtils.CIRCLES_DELTA * PredictionUtils.CIRCLES_NUM * 0.5)
+        else:
+            tx, ty = self._target[0]
+            return MeasurementUtils.distance(px, py, tx, ty)
 
     def _find_intersections(self, own_predictions, radius, ignored_num):
         assert len(own_predictions) > 0
@@ -399,12 +411,15 @@ class FearfulAlgorithm(AbstractAlgorithm):
             if self._robot_name == robot_name:
                 continue
 
-            if self._fear_factors[self._robot_name] > self._fear_factors[robot_name] and not \
-                    robot_name in self._yield_set:
+            if self._fear_factors[self._robot_name] > self._fear_factors[robot_name]:
                 continue
 
             for ((mx, my), (ox, oy)) in zip(own_predictions[ignored_num:], other_predictions[ignored_num:]):
-                if MeasurementUtils.distance(mx, my, ox, oy) <= radius:
+                dst = MeasurementUtils.distance(mx, my, ox, oy)
+
+                if dst <= radius:
                     return True
 
-        return self._maze_util.find_intersection(own_predictions, 0.25)
+        maze = self._maze_util.find_intersection(own_predictions, 0.25)
+
+        return maze

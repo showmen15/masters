@@ -185,10 +185,10 @@ class MazeUtil:
                 return True
 
             for (wx1, wy1), (wx2, wy2) in self._spaces[space_id]['walls']:
-                if wx1 == wx2 and wy1 <= y <= wy2 and abs(x - wx1) < radius:
+                if wx1 == wx2 and min(wy1, wy2) < y < max(wy1, wy2) and abs(wx1 - x) < radius:
                     return True
 
-                if wy1 == wy2 and wx1 <= x <= wx2 and abs(y - wy1) < radius:
+                if wy1 == wy2 and min(wx1, wx2) < x < max(wx1, wx2) and abs(wy1 - y) < radius:
                     return True
 
                 if MeasurementUtils.distance(x, y, wx1, wy1) < radius:
@@ -199,19 +199,22 @@ class MazeUtil:
 
         return False
 
-    def get_close_walls_points(self, x, y, threshold):
+    def get_close_walls_points(self, x, y, radius):
         space_id = self.find_space_by_point((x, y))
         space_walls = self._spaces[space_id]['walls']
 
         points = set()
-        for (x1, y1), (x2, y2) in space_walls:
+        for (wx1, wy1), (wx2, wy2) in space_walls:
+            if wx1 == wx2 and min(wy1, wy2) < y < max(wy1, wy2) and abs(wx1 - x) < radius:
+                points.add((wx1, y))
 
-            if x1 == x2:
-                if min(y1, y2) < y < max(y1, y2) and abs(x1 - x) < threshold:
-                    points.add((x1, y))
+            if wy1 == wy2 and min(wx1, wx2) < x < max(wx1, wx2) and abs(wy1 - y) < radius:
+                points.add((x, wy1))
 
-            if y1 == y2:
-                if min(x1, x2) < x < max(x1, x2) and abs(y1 - y) < threshold:
-                    points.add((x, y1))
+            if MeasurementUtils.distance(x, y, wx1, wy1) < radius:
+                points.add((wx1, wy1))
+
+            if MeasurementUtils.distance(x, y, wx2, wy2) < radius:
+                points.add((wx2, wy2))
 
         return points

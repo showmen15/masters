@@ -82,7 +82,9 @@ handle_info({Port, {data, Data}}, State) when Port =:= State#state.port ->
 			State#state{event = undef};
 
 		'ROBOT_COMMAND' ->
-			send_robot_command(State, CmdMsg#commandmessage.robotcommand),
+			RobotCommand = CmdMsg#commandmessage.robotcommand,
+			send_robot_command(State, RobotCommand),
+			client_state_manager:update_fear_factor(State#state.robot_name, RobotCommand#robotcommand.fearfactor),
 			State;
 
 		_ ->
@@ -108,15 +110,23 @@ send_to_port(State, Msg) ->
 	State#state.port ! {self(), {command, Msg}}.
 
 send_request_state_reply(State) ->
-	{ok, RobotsStateDict} = client_state_manager:request_state(),
+	{ok, RobotsStateDict, FFDict} = client_state_manager:request_state(),
 
 	Fun = fun ({RobotName, RobotState}) ->
+		FearFactor = case dict:find(RobotName, FFDict) of
+			{ok, FF} ->
+				FF;
+			error -> 
+				0.0
+		end,
+
 		#robotfullstate{
 			robotname = RobotName,
 			x = RobotState#robot_state.x,
 			y = RobotState#robot_state.y,
 			theta = RobotState#robot_state.theta,
-			timestamp = RobotState#robot_state.timestamp
+			timestamp = RobotState#robot_state.timestamp,
+			fearfactor = FearFactor
 		} end,
 
 	StatesList = lists:map(Fun, dict:to_list(RobotsStateDict)),

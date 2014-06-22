@@ -13,7 +13,8 @@
     x = erlang:error({required, x}),
     y = erlang:error({required, y}),
     theta = erlang:error({required, theta}),
-    timestamp = erlang:error({required, timestamp})
+    timestamp = erlang:error({required, timestamp}),
+    fearfactor = erlang:error({required, fearfactor})
 }).
 -endif.
 
@@ -45,7 +46,8 @@
     frontleft = erlang:error({required, frontleft}),
     frontright = erlang:error({required, frontright}),
     rearleft = erlang:error({required, rearleft}),
-    rearright = erlang:error({required, rearright})
+    rearright = erlang:error({required, rearright}),
+    fearfactor = erlang:error({required, fearfactor})
 }).
 -endif.
 

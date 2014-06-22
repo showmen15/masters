@@ -22,7 +22,8 @@
 -export([encode/1, decode/2, delimited_decode/2]).
 
 -record(robotcommand,
-	{frontleft, frontright, rearleft, rearright}).
+	{frontleft, frontright, rearleft, rearright,
+	 fearfactor}).
 
 -record(commandmessage, {type, robotcommand}).
 
@@ -31,7 +32,7 @@
 -record(setupmessage, {robotname}).
 
 -record(robotfullstate,
-	{robotname, x, y, theta, timestamp}).
+	{robotname, x, y, theta, timestamp, fearfactor}).
 
 -record(statemessage, {robotstate, event}).
 
@@ -137,7 +138,10 @@ iolist(robotfullstate, Record) ->
 	  []),
      pack(5, required,
 	  with_default(Record#robotfullstate.timestamp, none),
-	  int64, [])];
+	  int64, []),
+     pack(6, required,
+	  with_default(Record#robotfullstate.fearfactor, none),
+	  double, [])];
 iolist(setupmessage, Record) ->
     [pack(1, required,
 	  with_default(Record#setupmessage.robotname, none),
@@ -162,6 +166,9 @@ iolist(robotcommand, Record) ->
 	  double, []),
      pack(4, required,
 	  with_default(Record#robotcommand.rearright, none),
+	  double, []),
+     pack(5, required,
+	  with_default(Record#robotcommand.fearfactor, none),
 	  double, [])].
 
 with_default(Default, Default) -> undefined;
@@ -277,9 +284,10 @@ decode(statemessage, Bytes) when is_binary(Bytes) ->
     Decoded = decode(Bytes, Types, Defaults),
     to_record(statemessage, Decoded);
 decode(robotfullstate, Bytes) when is_binary(Bytes) ->
-    Types = [{5, timestamp, int64, []},
-	     {4, theta, double, []}, {3, y, double, []},
-	     {2, x, double, []}, {1, robotname, string, []}],
+    Types = [{6, fearfactor, double, []},
+	     {5, timestamp, int64, []}, {4, theta, double, []},
+	     {3, y, double, []}, {2, x, double, []},
+	     {1, robotname, string, []}],
     Defaults = [],
     Decoded = decode(Bytes, Types, Defaults),
     to_record(robotfullstate, Decoded);
@@ -300,8 +308,9 @@ decode(commandmessage, Bytes) when is_binary(Bytes) ->
     Decoded = decode(Bytes, Types, Defaults),
     to_record(commandmessage, Decoded);
 decode(robotcommand, Bytes) when is_binary(Bytes) ->
-    Types = [{4, rearright, double, []},
-	     {3, rearleft, double, []}, {2, frontright, double, []},
+    Types = [{5, fearfactor, double, []},
+	     {4, rearright, double, []}, {3, rearleft, double, []},
+	     {2, frontright, double, []},
 	     {1, frontleft, double, []}],
     Defaults = [],
     Decoded = decode(Bytes, Types, Defaults),

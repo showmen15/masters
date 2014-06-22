@@ -4,17 +4,18 @@ class RobotConstants:
     ROBOT_WIDTH = 0.2
 
 class State:
-    def __init__(self, robot_name, x, y, theta, timestamp):
+    def __init__(self, robot_name, x, y, theta, timestamp, fear_factor):
         self._robot_name = robot_name
         self._x = x
         self._y = y
         self._theta = theta
         self._timestamp = timestamp
+        self._fear_factor = fear_factor
 
     @staticmethod
     def from_full_state(full_state):
         return State(full_state.robotName, full_state.x, full_state.y,
-                      full_state.theta, full_state.timestamp)
+                      full_state.theta, full_state.timestamp, full_state.fearFactor)
 
 
     def get_robot_name(self):
@@ -37,6 +38,9 @@ class State:
 
     def get_timestamp(self):
         return self._timestamp
+
+    def get_fear_factor(self):
+        return self._fear_factor
 
     def __unicode__(self):
         return "%s: x=%f, y=%f, theta=%f, time:%d" \

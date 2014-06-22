@@ -15,6 +15,7 @@ message RobotFullState {
 	required double y = 3;
 	required double theta = 4;
 	required int64 timestamp = 5;
+	required double fearFactor = 6;
 }	
 
 message SetupMessage {
@@ -38,5 +39,6 @@ message RobotCommand {
 	required double frontRight	= 2;
 	required double rearLeft	= 3;
 	required double rearRight	= 4;
+	required double fearFactor  = 5;
 }
 
