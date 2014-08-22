@@ -5,9 +5,10 @@ import math
 import time
 
 from collections import deque
-from robot_model import VisState
+from robot_model import VisState, StateMsg, StateMsgType
 from robot_command import RobotCommand
 from utils.time_utils import TimeUtil
+from utils.measurement_utils import MeasurementUtils
 from utils.prediction_utils import PredictionUtils
 from kalman.location_kalman import LocationKalman
 from kalman.angle_kalman import AngleKalman
@@ -35,6 +36,7 @@ class AbstractAlgorithm(object):
         self._running = True
         self._variables = {}
         self._own_fear_factor = 0.0
+        self._odometer = 0.0
 
         if self.SAVE_STATES:
             self._f = open("/tmp/%s.states" % (self._robot_name, ), 'w')
@@ -53,10 +55,12 @@ class AbstractAlgorithm(object):
         self._running = True
         self._variables = {}
         self._own_fear_factor = 0.0
+        self._odometer = 0.0
 
     def start(self):
         self._logger.info("Start")
         self._running = True
+        self.send_start_msg()
 
     def stop(self):
         self._logger.info("Stop")
@@ -132,6 +136,17 @@ class AbstractAlgorithm(object):
 
         self._controller.send_vis_update(vis_state)
 
+    def send_finish_msg(self):
+        self._send_state_msg(StateMsgType.finish)
+
+    def send_start_msg(self):
+        self._send_state_msg(StateMsgType.start)
+
+    def _send_state_msg(self, type):
+        msg = StateMsg(self._robot_name, self._own_robot['timestamp'], self.__class__.__name__, type)
+        msg.set_distance(self._odometer)
+        self._controller.send_vis_update(msg)
+
     def _modify_vis_state(self, vis_state):
         pass
 
@@ -183,6 +198,9 @@ class AbstractAlgorithm(object):
             (theta, omega, epsilon) = angle_kalman.get_means()
 
             v = math.sqrt(vx * vx + vy * vy)
+
+            if robot_name == self._robot_name:
+                self._odometer += MeasurementUtils.distance(state['x'], state['y'], x, y)
 
             state['x'] = x
             state['y'] = y

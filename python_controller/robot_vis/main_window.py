@@ -24,9 +24,13 @@ class MainWindow(QtGui.QWidget):
         reset_button = QtGui.QPushButton("Reset")
         reset_button.clicked.connect(self.reset_clicked)
 
+        auto_button = QtGui.QPushButton("Auto")
+        auto_button.clicked.connect(self.auto_clicked)
+
         groupbox_layout.addWidget(start_button)
         groupbox_layout.addWidget(stop_button)
         groupbox_layout.addWidget(reset_button)
+        groupbox_layout.addWidget(auto_button)
         groupbox_layout.addStretch(1)
 
         groupbox.setLayout(groupbox_layout)
@@ -39,13 +43,16 @@ class MainWindow(QtGui.QWidget):
         self.show()
 
     def start_clicked(self):
-        self._server.send_message("start")
+        self._server.start()
 
     def stop_clicked(self):
-        self._server.send_message("stop")
+        self._server.stop()
 
     def reset_clicked(self):
-        self._server.send_message("reset")
+        self._server.reset()
+
+    def auto_clicked(self):
+        self._server.enable_auto_mode()
 
     def closeEvent(self, event):
         QtGui.QApplication.quit()

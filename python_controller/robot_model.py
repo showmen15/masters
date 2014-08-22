@@ -1,7 +1,9 @@
+from enum import Enum
+
 
 class RobotConstants:
-
     ROBOT_WIDTH = 0.2
+
 
 class State:
     def __init__(self, robot_name, x, y, theta, timestamp, fear_factor):
@@ -15,7 +17,7 @@ class State:
     @staticmethod
     def from_full_state(full_state):
         return State(full_state.robotName, full_state.x, full_state.y,
-                      full_state.theta, full_state.timestamp, full_state.fearFactor)
+                     full_state.theta, full_state.timestamp, full_state.fearFactor)
 
 
     def get_robot_name(self):
@@ -50,11 +52,11 @@ class State:
     def __str__(self):
         return self.__unicode__()
 
-    def __repr__ (self):
+    def __repr__(self):
         return self.__unicode__()
 
-class VisState:
 
+class VisState:
     def __init__(self, robot_name, state):
         self._robot_name = robot_name
         self._state = state
@@ -99,3 +101,44 @@ class VisState:
 
     def get_yield_set(self):
         return self._yield_set
+
+
+class StateMsgType(Enum):
+    start = 1
+    finish = 2
+
+
+class StateMsg:
+    def __init__(self, robot_name, timestamp, algorithm, type):
+        self._robot_name = robot_name
+        self._timestamp = timestamp
+        self._type = type
+        self._algorith = algorithm
+        self._distance = None
+
+    def get_robot_name(self):
+        return self._robot_name
+
+    def get_timestamp(self):
+        return self._timestamp
+
+    def get_type(self):
+        return self._type
+
+    def get_distance(self):
+        return self._distance
+
+    def get_algorithm(self):
+        return self._algorith
+
+    def set_distance(self, distance):
+        self._distance = distance
+
+    def __unicode__(self):
+        return "%s, %s, %s" % (self._type, self._robot_name, self._timestamp)
+
+    def __repr__(self):
+        return self.__unicode__()
+
+    def __str__(self):
+        return self.__unicode__()

@@ -1,4 +1,6 @@
 {
+  "name": "loop",
+  "timeout": 60,
   "walls": [
     {
       "type": "wall",

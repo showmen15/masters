@@ -1,4 +1,6 @@
 {
+  "name": "narrow",
+  "timeout": 60,
   "walls": [
     {
       "type": "wall",

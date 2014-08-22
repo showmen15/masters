@@ -1,4 +1,6 @@
 {
+  "name": "3vs1_row",
+  "timeout": 60,
   "walls": [
     {
       "type": "wall",

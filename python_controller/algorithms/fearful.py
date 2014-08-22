@@ -114,6 +114,7 @@ class FearfulAlgorithm(AbstractAlgorithm):
                 else:
                     self._target_reached = True
                     self._logger.info("Target reached")
+                    self.send_finish_msg()
 
         space_id = self._maze_util.find_space_by_point((x, y))
         if space_id != self._space_id:
