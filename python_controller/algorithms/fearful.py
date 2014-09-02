@@ -24,7 +24,6 @@ class FearfulAlgorithm(AbstractAlgorithm):
         super(FearfulAlgorithm, self).__init__(controller, robot_name)
         self._logger.info("Simple algorithm started")
 
-        self._INITIAL_FEAR_FACTOR = 1.0 + int(robot_name[5:])/100.0
 
         self._target = None
         self._target_reached = False
@@ -36,7 +35,7 @@ class FearfulAlgorithm(AbstractAlgorithm):
         self._yield_timestamps = {}
         self._yield_set = set()
 
-        self._own_fear_factor = self._INITIAL_FEAR_FACTOR
+        self._own_fear_factor = self._base_fear_factor
 
     def reset(self):
         super(FearfulAlgorithm, self).reset()
@@ -50,7 +49,7 @@ class FearfulAlgorithm(AbstractAlgorithm):
         self._yield_timestamps = {}
         self._yield_set = set()
 
-        self._own_fear_factor = self._INITIAL_FEAR_FACTOR
+        self._own_fear_factor = self._base_fear_factor
 
     def _loop(self, avail_time):
         self._compute_fear_factors()
@@ -136,12 +135,11 @@ class FearfulAlgorithm(AbstractAlgorithm):
         preds = FearfulAlgorithm._cut_predictions(preds, target)
 
         self._predictions[self._robot_name] = preds
-        self._variables['rate'] = self._rate_predictions(preds)
 
         target_dist = MeasurementUtils.distance(x, y, tx, ty)
 
         if not self._find_intersections(preds, self.CIRCLES_RADIUS * 1.5, 0):
-            self._own_fear_factor = self._INITIAL_FEAR_FACTOR
+            self._own_fear_factor = self._base_fear_factor
 
             v, omega = FearfulAlgorithm._navigate_fun(v, theta, bearing, False)
 
@@ -224,7 +222,6 @@ class FearfulAlgorithm(AbstractAlgorithm):
             return
         else:
             self._predictions[self._robot_name] = best_preds
-            self._variables['rate'] = self._rate_predictions(best_preds)
 
             best_v, omega = FearfulAlgorithm._navigate_fun(best_v, theta, best_bearing, False)
 

@@ -193,7 +193,7 @@ if __name__ == "__main__":
     roson_file = open(sys.argv[2])
     roson = json.load(roson_file)
 
-    controller = Controller(robot_name, FearfulAlgorithm, roson)
+    controller = Controller(robot_name, SimpleAlgorithm, roson)
 
     @atexit.register
     def exit_handler():

@@ -3,6 +3,7 @@ __author__ = 'michal'
 import logging
 import math
 import time
+import random
 
 from collections import deque
 from robot_model import VisState, StateMsg, StateMsgType
@@ -38,6 +39,8 @@ class AbstractAlgorithm(object):
         self._own_fear_factor = 0.0
         self._odometer = 0.0
 
+        self._base_fear_factor = AbstractAlgorithm._random_base_fear_factor()
+
         if self.SAVE_STATES:
             self._f = open("/tmp/%s.states" % (self._robot_name, ), 'w')
         else:
@@ -57,6 +60,8 @@ class AbstractAlgorithm(object):
         self._own_fear_factor = 0.0
         self._odometer = 0.0
 
+        self._base_fear_factor = AbstractAlgorithm._random_base_fear_factor()
+
     def start(self):
         self._logger.info("Start")
         self._running = True
@@ -67,7 +72,6 @@ class AbstractAlgorithm(object):
         self._running = False
 
     def loop(self):
-
         update_state_times = deque(maxlen=self.AVG_TIMES_NUM)
         predict_times = deque(maxlen=self.AVG_TIMES_NUM)
         #loop_times = deque(maxlen=self.AVG_TIMES_NUM)
@@ -117,6 +121,10 @@ class AbstractAlgorithm(object):
     def _send_robot_command(self, robot_command):
         self._controller.send_robot_command(robot_command, self._own_fear_factor)
 
+    @staticmethod
+    def _random_base_fear_factor():
+        return 1.0 + random.random() / 100.0
+
     def _send_vis_state(self):
 
         states_to_send = {}
@@ -130,6 +138,8 @@ class AbstractAlgorithm(object):
         vis_state.set_predictions(self._predictions)
 
         self._modify_vis_state(vis_state)
+
+        self._variables['base_ff'] = self._base_fear_factor
 
         for k, v in self._variables.items():
             vis_state.add_variable(k, v)

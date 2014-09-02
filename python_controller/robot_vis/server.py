@@ -95,14 +95,15 @@ class RobotVisServer(QUdpSocket):
     def reset_auto_mode(self):
         self._robots_data = {}
         self._robots_counter = 0
-        self._start_time = datetime.now()
-        self._runs_counter += 1
 
         self._send_message("stop")
         time.sleep(1)
         self._send_message("reset")
         time.sleep(1)
         self._send_message("start")
+
+        self._start_time = datetime.now()
+        self._runs_counter += 1
 
         if self._auto_timer is not None:
             self._auto_timer.stop()

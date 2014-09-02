@@ -8,23 +8,33 @@ from robot_model import RobotConstants
 from utils.prediction_utils import PredictionUtils
 from algorithms.abstract_algorithm import AbstractAlgorithm
 from utils.measurement_utils import MeasurementUtils
+from utils.maze_util import MazeUtil
 from operator import itemgetter
 
 class SimpleAlgorithm(AbstractAlgorithm):
     CRUISE_SPEED = 0.5
     ANGLE_MEASURE_STEPS = 5
-
     CIRCLES_RADIUS = 0.5
-
     VARIANTS_MAX_TIME = 0.015
+    FF_RADIUS = 2.0
+    YIELD_DELAY = 3 * 1000 * 1000
+    RUNAWAY_TIME = 10000.0 * 1000 * 1000
 
-    def __init__(self, controller, robot_name):
+    def __init__(self, controller, robot_name, roson):
         super(SimpleAlgorithm, self).__init__(controller, robot_name)
         self._logger.info("Simple algorithm started")
+
 
         self._target = None
         self._target_reached = False
         self._last_params = None
+        self._maze_util = MazeUtil(roson)
+        self._space_id = None
+
+        self._yield_timestamps = {}
+        self._yield_set = set()
+
+        self._own_fear_factor = self._base_fear_factor
 
     def reset(self):
         super(SimpleAlgorithm, self).reset()
@@ -32,58 +42,88 @@ class SimpleAlgorithm(AbstractAlgorithm):
         self._target = None
         self._target_reached = False
         self._last_params = None
+        self._space_id = None
 
-    def _loop(self):
-        self._navigate()
+        self._yield_timestamps = {}
+        self._yield_set = set()
 
-    def _navigate(self):
+        self._own_fear_factor = self._base_fear_factor
+
+    def _loop(self, avail_time):
+        self._navigate(avail_time)
+
+    def _navigate(self, avail_time):
         dist = None
-
-        if self._target is None:
-            self._target = self._controller.get_new_target()
-
-        if not self._target_reached and self._target_distance() < 0.1:
-            new_target = self._controller.get_new_target()
-            if new_target != self._target:
-                self._target = new_target
-            else:
-                self._target_reached = True
-                self._logger.info("Target reached")
 
         x = self._own_robot['x']
         y = self._own_robot['y']
         theta = self._own_robot['theta']
         v = SimpleAlgorithm.CRUISE_SPEED
 
-        if self._avoid_close_robots(x, y, theta):
+        if self._target is None:
+            tx, ty = self._controller.get_new_target()
+            self._target = self._maze_util.find_path((x, y), (tx, ty))
+
+        if not self._target_reached and self._target_distance() < 0.1:
+
+            if len(self._target) > 1:
+                self._target.pop(0)
+            else:
+                new_target = self._controller.get_new_target()
+                if new_target is None or new_target != self._target[0]:
+                    tx, ty = new_target
+                    self._target = self._maze_util.find_path((x, y), (tx, ty))
+                else:
+                    self._target_reached = True
+                    self._logger.info("Target reached")
+                    self.send_finish_msg()
+
+        space_id = self._maze_util.find_space_by_point((x, y))
+        if space_id != self._space_id:
+            if self._space_id is not None:
+                tx, ty = self._target[-1]
+                self._target = self._maze_util.find_path((x, y), (tx, ty))
+
+            self._space_id = space_id
+
+
+        if self._avoid_close_objects(x, y, theta):
             return
 
-        tx, ty = self._target
+        target = self._target[0]
+        tx, ty = target
         bearing = MeasurementUtils.angle(x, y, tx, ty)
 
         preds = PredictionUtils.predict_positions(x, y, v, bearing, 0.0)
-        preds = SimpleAlgorithm._cut_predictions(preds, self._target)
+        preds = SimpleAlgorithm._cut_predictions(preds, target)
 
         self._predictions[self._robot_name] = preds
-        self._variables['rate'] = self._rate_predictions(preds)
 
         target_dist = MeasurementUtils.distance(x, y, tx, ty)
 
-        if not self._find_intersections(preds, self.CIRCLES_RADIUS * 2.0, 0):
+        if not self._find_intersections(preds, self.CIRCLES_RADIUS * 1.5, 0):
+            self._own_fear_factor = self._base_fear_factor
+
             v, omega = SimpleAlgorithm._navigate_fun(v, theta, bearing, False)
 
-            if target_dist < 0.5:
+            if target_dist < 0.2:
                 v *= target_dist
 
-            if target_dist < 0.2:
+            if target_dist < 0.05:
                 v = 0
 
             Vl, Vr = SimpleAlgorithm._get_wheel_speeds(v, omega)
 
-            self._controller.send_robot_command(
+            self._send_robot_command(
                 RobotCommand(Vl, Vr, Vl, Vr))
 
             return
+
+        for robot_name in list(self._yield_set):
+            rx = self._states[robot_name]['x']
+            ry = self._states[robot_name]['y']
+            if MeasurementUtils.distance(x, y, rx, ry) > 2.0:
+                self._yield_set.remove(robot_name)
 
         best_v = None
         best_bearing = None
@@ -107,22 +147,32 @@ class SimpleAlgorithm(AbstractAlgorithm):
                 best_rate = None
                 best_preds = None
 
-        variants_stop_time = time.time() + SimpleAlgorithm.VARIANTS_MAX_TIME
+        try_stop = True
 
+        variants_stop_time = time.time() + avail_time - 0.001
+        var_num = 0
         while time.time() < variants_stop_time:
-            rand_v = random.uniform(0.0, self.CRUISE_SPEED * 2.0)
-            rand_bearing = random.uniform(-math.pi, math.pi)
-            rand_radius = random.uniform(0.0, self.CRUISE_SPEED * PredictionUtils.CIRCLES_DELTA * PredictionUtils.CIRCLES_NUM)
+            var_num += 1
 
-            mp_x = rand_radius * math.cos(rand_bearing)
-            mp_y = rand_radius * math.sin(rand_bearing)
+            if try_stop:
+                rand_v = 0.0
+                rand_bearing = theta
+                rand_radius = 0.0
+                try_stop = False
+            else:
+                rand_v = random.uniform(0.0, self.CRUISE_SPEED * 2.0)
+                rand_bearing = random.uniform(-math.pi, math.pi)
+                rand_radius = random.uniform(0.0, self.CRUISE_SPEED * PredictionUtils.CIRCLES_DELTA * PredictionUtils.CIRCLES_NUM)
+
+            mp_x = rand_radius * math.cos(rand_bearing) + x
+            mp_y = rand_radius * math.sin(rand_bearing) + y
             rand_midpoint = mp_x, mp_y
 
             rand_preds = PredictionUtils.predict_positions(x, y, rand_v, rand_bearing, 0.0)
             rand_preds = SimpleAlgorithm._cut_predictions(rand_preds, rand_midpoint)
             rand_rate = self._rate_predictions(rand_preds)
 
-            if self._find_intersections(rand_preds, self.CIRCLES_RADIUS * 2, 1):
+            if self._find_intersections(rand_preds, self.CIRCLES_RADIUS * 1.5, 1):
                 continue
 
             if best_rate is None or rand_rate < best_rate - 0.5:
@@ -135,45 +185,78 @@ class SimpleAlgorithm(AbstractAlgorithm):
             return
         else:
             self._predictions[self._robot_name] = best_preds
-            self._variables['rate'] = self._rate_predictions(best_preds)
 
             best_v, omega = SimpleAlgorithm._navigate_fun(best_v, theta, best_bearing, False)
 
             mp_x, mp_y = best_midpoint
             midpoint_dist = MeasurementUtils.distance(x, y, mp_x, mp_y)
 
+
             if midpoint_dist < 0.5:
                 best_v *= midpoint_dist
 
             Vl, Vr = SimpleAlgorithm._get_wheel_speeds(best_v, omega)
 
-            self._controller.send_robot_command(
+            self._send_robot_command(
                 RobotCommand(Vl, Vr, Vl, Vr))
 
-    def _avoid_close_robots(self, x, y, theta):
+    def _avoid_close_objects(self, x, y, theta):
         distances = self._distances_to_robots()
-        if len(distances) > 0:
-            robot_name, distance = distances[0]
-            if distance < SimpleAlgorithm.CIRCLES_RADIUS:
+
+        new_yield_timestamps = {}
+
+        self._yield_timestamps = new_yield_timestamps
+
+        bearings = set()
+
+        for robot_name, distance in distances:
+            if distance > SimpleAlgorithm.CIRCLES_RADIUS * 1:
+                break
+
+            if self._states[self._robot_name]['fear_factor'] < self._states[robot_name]['fear_factor']:
+
                 state = self._states[robot_name]
                 rx = state['x']
                 ry = state['y']
 
                 bearing_to_robot = MeasurementUtils.angle(x, y, rx, ry)
-                opposite_bearing = MeasurementUtils.normalize_angle(bearing_to_robot + math.pi)
-
-                v, omega = SimpleAlgorithm._navigate_fun(SimpleAlgorithm.CRUISE_SPEED, theta, opposite_bearing, True)
-                Vl, Vr = SimpleAlgorithm._get_wheel_speeds(v, omega)
-
-                preds = PredictionUtils.predict_positions(x, y, v, opposite_bearing, 0.0)
-                self._predictions[self._robot_name] = preds
-
-                self._controller.send_robot_command(
-                    RobotCommand(Vl, Vr, Vl, Vr))
-
+                #bearings.add(bearing_to_robot)
+            else:
+                self._send_stop_command()
                 return True
 
-        return False
+        for wx, wy in self._maze_util.get_close_walls_points(x, y, 0.25):
+            bearing_to_wall = MeasurementUtils.angle(x, y, wx, wy)
+            bearings.add(bearing_to_wall)
+
+
+        if len(bearings) == 0:
+            return False
+        else:
+            bearings = list(bearings)
+            bearings.sort()
+            bearings_len = len(bearings)
+            bearings.append(bearings[0] + 2.0 * math.pi)
+
+            max_gap = 0
+            best_bearing = None
+            for i in range(bearings_len):
+                gap = abs(bearings[i+1] - bearings[i])
+                if gap > max_gap:
+                    max_gap = gap
+                    best_bearing = MeasurementUtils.normalize_angle(bearings[i] + 0.5 * (bearings[i+1] - bearings[i]))
+
+            v, omega = SimpleAlgorithm._navigate_fun(SimpleAlgorithm.CRUISE_SPEED * 0.5, theta, best_bearing, True)
+
+            preds = PredictionUtils.predict_positions(x, y, v, best_bearing, 0.0)
+            self._predictions[self._robot_name] = preds
+
+        Vl, Vr = SimpleAlgorithm._get_wheel_speeds(v, omega)
+
+        self._send_robot_command(
+            RobotCommand(Vl, Vr, Vl, Vr))
+
+        return True
 
     @staticmethod
     def _navigate_fun(v, theta, target_theta, with_reverse):
@@ -189,12 +272,10 @@ class SimpleAlgorithm(AbstractAlgorithm):
         omega = -10.0 * p * 2.0
         omega = math.copysign(min(abs(omega), 5.0), omega)
 
-        if abs(omega) > 1.0:
+        if abs(omega) > 0.5:
             v = 0.0
 
         return v, omega
-
-
 
     @staticmethod
     def _get_wheel_speeds(v, omega):
@@ -204,18 +285,20 @@ class SimpleAlgorithm(AbstractAlgorithm):
         return Vl, Vr
 
     def _target_distance(self):
-        assert self._target is not None
+        assert type(self._target) == type([])
+        assert len(self._target) > 0
 
-        (tx, ty) = self._target
+        (tx, ty) = self._target[0]
         mx = self._own_robot['x']
         my = self._own_robot['y']
 
         return MeasurementUtils.distance(tx, ty, mx, my)
 
     def _target_angle(self):
-        assert self._target is not None
+        assert type(self._target) == type([])
+        assert len(self._target) > 0
 
-        (tx, ty) = self._target
+        (tx, ty) = self._target[0]
         mx = self._own_robot['x']
         my = self._own_robot['y']
 
@@ -227,8 +310,8 @@ class SimpleAlgorithm(AbstractAlgorithm):
 
         for i in range(len(predictions)):
             (px, py) = predictions[i]
-            if MeasurementUtils.distance(px, py, tx, ty) < 0.3:
-                return predictions[:i+1] + [(tx, ty)] * (len(predictions) - i + 1)
+            if MeasurementUtils.distance(px, py, tx, ty) < 0.2:
+                return predictions[:i+1] + [(px, py)] * (len(predictions) - i - 1)
 
         return predictions
 
@@ -254,25 +337,34 @@ class SimpleAlgorithm(AbstractAlgorithm):
     def _rate_predictions(self, predictions):
         assert len(predictions) > 0
 
-        (tx, ty) = self._target
         (px, py) = predictions[-1]
 
-        return MeasurementUtils.distance(px, py, tx, ty)
+        if len(self._yield_set) > 0:
+            robot_name = list(self._yield_set)[0]
+            rx = self._states[robot_name]['x']
+            ry = self._states[robot_name]['y']
+
+            return 1.0 - MeasurementUtils.distance(px, py, rx, ry) / (self.CRUISE_SPEED * PredictionUtils.CIRCLES_DELTA * PredictionUtils.CIRCLES_NUM * 0.5)
+        else:
+            tx, ty = self._target[0]
+            return MeasurementUtils.distance(px, py, tx, ty)
 
     def _find_intersections(self, own_predictions, radius, ignored_num):
         assert len(own_predictions) > 0
-
-        my_ff = AbstractAlgorithm.get_ff(self._robot_name)
 
         for (robot_name, other_predictions) in self._predictions.items():
             if self._robot_name == robot_name:
                 continue
 
-            if AbstractAlgorithm.get_ff(robot_name) < my_ff:
+            if self._states[self._robot_name]['fear_factor'] > self._states[robot_name]['fear_factor']:
                 continue
 
             for ((mx, my), (ox, oy)) in zip(own_predictions[ignored_num:], other_predictions[ignored_num:]):
-                if MeasurementUtils.distance(mx, my, ox, oy) <= radius:
+                dst = MeasurementUtils.distance(mx, my, ox, oy)
+
+                if dst <= radius:
                     return True
 
-        return False
+        maze = self._maze_util.find_intersection(own_predictions, 0.25)
+
+        return maze
