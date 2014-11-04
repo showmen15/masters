@@ -1,8 +1,8 @@
--module(client_state_manager).
+-module(roboss_client_dispatcher).
 
 -behaviour(gen_server).
 
--export([start_link/0, stop/0, request_state/0, update_fear_factor/2]).
+-export([start_link/0, stop/1]).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
 -include("../../include/records.hrl").
@@ -15,22 +15,18 @@
 %% Public API
 
 start_link() ->
-	gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
+	gen_server:start_link(?MODULE, [], []).
 
-stop() ->
-	gen_server:call(?MODULE, stop).
-
-request_state() ->
-	gen_server:call(?MODULE, request_state).
-
-update_fear_factor(RobotName, FearFactor) ->
-	gen_server:cast(?MODULE, {update_fear_factor, RobotName, FearFactor}).	
+stop(Pid) ->
+	gen_server:call(Pid, stop).
 
 %% Callbacks
 
 init(_Args) ->
 	io:format("~s started~n", [?MODULE]),
+	net_kernel:connect_node(roboss@rose),
 	roboss_serv:request_notifies(self()),
+	self() ! spawn_clients,
 	{ok, #state{}}.
 
 handle_call(request_state, _From, #state{robots_dict = Dict, ff_dict = FFDict} = State) ->
@@ -46,8 +42,19 @@ handle_cast({update_fear_factor, RobotName, FearFactor}, #state{ff_dict = FFDict
 	NewFFDict = dict:store(RobotName, FearFactor, FFDict),
 	{noreply, State#state{ff_dict = NewFFDict}};
 
+handle_cast({send_wheels_cmd, RobotName, WheelsCmd}, State) ->
+	roboss_serv:send_wheels_cmd(RobotName, WheelsCmd),
+	{noreply, State};
+ 
 handle_cast(_Msg, State) ->
 	{noreply, State}.
+
+handle_info(spawn_clients, State) ->
+	{ok, RobotsList} = roboss_serv:get_robots_list(),
+	lists:map(
+		fun (RobotName) -> client_controllers_sup:spawn_client(RobotName, self()) end,
+		RobotsList),
+	{noreply, State};
 
 handle_info({notification, RobotName, RobotState}, #state{robots_dict = Dict, ff_dict = FFDict} = State) ->
 

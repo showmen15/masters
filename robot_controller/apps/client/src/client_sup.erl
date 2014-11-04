@@ -31,13 +31,13 @@ init(_Args) ->
 		[client_clients_sup]
 	},
 
-	StateManagerSpec = {
-		state_manager,
-		{client_state_manager, start_link, []},
+	DispatcherSpec = {
+		dispatcher,
+		{roboss_client_dispatcher, start_link, []},
 		permanent,
 		1000,
 		worker,
-		[client_state_manager]
+		[roboss_client_dispatcher]
 	},
 
 	ServSpec = {
@@ -58,5 +58,5 @@ init(_Args) ->
 		[client_udp_serv]
 	},
 
-    {ok, {{one_for_all, MaxRestart, MaxTime}, [SupSpec, StateManagerSpec, ServSpec, UdpServSpec]}}.
+    {ok, {{one_for_all, MaxRestart, MaxTime}, [SupSpec, DispatcherSpec, ServSpec, UdpServSpec]}}.
 

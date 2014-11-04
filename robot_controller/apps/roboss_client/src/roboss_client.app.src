@@ -1,0 +1,14 @@
+{application, roboss_client,
+ [
+  {description, "Roboss client controlling application"},
+  {vsn, "1"},
+  {registered, []},
+  {applications, [
+                  kernel,
+                  stdlib
+                 ]},
+  {mod, {roboss_client_app, []}},
+  {env, [
+    {roboss_node, roboss@rose}
+  ]}
+ ]}.
