@@ -1,0 +1,16 @@
+{application, amber_client,
+ [
+  {description, "Amber client"},
+  {vsn, "1"},
+  {registered, []},
+  {applications, [
+                  kernel,
+                  stdlib
+                 ]},
+  {mod, {amber_client_app, []}},
+  {env, [
+    {amber_address, "127.0.0.1"},
+    {amber_port, 26233},
+    {state_manager_address, "127.0.0.1"}
+  ]}
+ ]}.
