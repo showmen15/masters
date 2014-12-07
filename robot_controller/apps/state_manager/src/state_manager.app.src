@@ -1,0 +1,15 @@
+{application, state_manager,
+ [
+  {description, ""},
+  {vsn, "1"},
+  {registered, []},
+  {applications, [
+                  kernel,
+                  stdlib
+                 ]},
+  {mod, { state_manager_app, []}},
+  {env, [
+    {evict_period, 1000},
+    {eviction_age, 10000}
+  ]}
+ ]}.
