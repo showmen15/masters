@@ -16,6 +16,14 @@
 			<Geom bouncyness="0.3" color="80003366" friction="0.0" position_x="5" position_y="0" position_z="1" rotation_x="0" rotation_y="0" rotation_z="0" size_x="10" size_y="0.1" size_z="2" type="box"/>
 			<Geom bouncyness="0.3" color="80003366" friction="0.0" position_x="10" position_y="5" position_z="1" rotation_x="0" rotation_y="0" rotation_z="0" size_x="0.1" size_y="10" size_z="2" type="box"/>
 			<Geom bouncyness="0.3" color="80003366" friction="0.0" position_x="0" position_y="5" position_z="1" rotation_x="0" rotation_y="0" rotation_z="0" size_x="0.1" size_y="10" size_z="2" type="box"/>
+			<!-- left box -->
+			<Geom bouncyness="0.3" color="80003366" friction="0.0" position_x="2.25" position_y="7" position_z="0.25" rotation_x="0" rotation_y="0" rotation_z="0" size_x="4.5" size_y="0.1" size_z="0.5" type="box"/>
+			<Geom bouncyness="0.3" color="80003366" friction="0.0" position_x="2.25" position_y="3" position_z="0.25" rotation_x="0" rotation_y="0" rotation_z="0" size_x="4.5" size_y="0.1" size_z="0.5" type="box"/>
+			<Geom bouncyness="0.3" color="80003366" friction="0.0" position_x="4.5" position_y="5" position_z="0.25" rotation_x="0" rotation_y="0" rotation_z="0" size_x="0.1" size_y="4" size_z="0.5" type="box"/>
+			<!-- right box -->
+			<Geom bouncyness="0.3" color="80003366" friction="0.0" position_x="7.75" position_y="7" position_z="0.25" rotation_x="0" rotation_y="0" rotation_z="0" size_x="4.5" size_y="0.1" size_z="0.5" type="box"/>
+			<Geom bouncyness="0.3" color="80003366" friction="0.0" position_x="7.75" position_y="3" position_z="0.25" rotation_x="0" rotation_y="0" rotation_z="0" size_x="4.5" size_y="0.1" size_z="0.5" type="box"/>
+			<Geom bouncyness="0.3" color="80003366" friction="0.0" position_x="5.5" position_y="5" position_z="0.25" rotation_x="0" rotation_y="0" rotation_z="0" size_x="0.1" size_y="4" size_z="0.5" type="box"/>
 		</Geoms>
 	</Environment>
 </World>

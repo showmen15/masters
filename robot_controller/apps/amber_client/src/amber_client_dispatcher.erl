@@ -2,24 +2,63 @@
 
 -behaviour(gen_server).
 
--export([start_link/0, stop/1]).
+-export([update_robot_states/0, start_states_updater/0, states_updater/1]).
+-export([start_location_updater/0, location_updater/1]).
+-export([start_link/0, stop/0, update_my_location/1]).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
 -include("../../include/records.hrl").
+-include("../state_manager/include/records.hrl").
+-include("include/location_pb.hrl").
+
 
 -record(state, {
 	robots_dict = dict:new(),
 	ff_dict = dict:new(),
-	robot_name
+	robot_name,
+	my_ff = 0.0,
+	my_location
 	}).
 
 %% Public API
 
 start_link() ->
-	gen_server:start_link(?MODULE, [], []).
+	gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
 
-stop(Pid) ->
-	gen_server:call(Pid, stop).
+stop() ->
+	gen_server:call(?MODULE, stop).
+
+update_my_location(MyLocation) ->
+	gen_server:cast(?MODULE, {update_my_location, MyLocation}).
+
+update_robot_states() ->
+	gen_server:cast(?MODULE, update_robot_states).
+
+start_location_updater() ->
+	{ok, UpdatePeriod} = application:get_env(amber_client, location_refresh_period),
+	Pid = spawn_link(?MODULE, location_updater, [UpdatePeriod]),
+	{ok, Pid}.
+
+location_updater(UpdatePeriod) ->
+	receive
+	after UpdatePeriod ->
+		MyLocation = amber_client_location:request_location(),
+		amber_client_dispatcher:update_my_location(MyLocation)
+	end,
+	location_updater(UpdatePeriod).
+
+
+start_states_updater() ->
+	{ok, UpdatePeriod} = application:get_env(amber_client, states_refresh_period),
+	Pid = spawn_link(?MODULE, states_updater, [UpdatePeriod]),
+	{ok, Pid}.
+
+states_updater(UpdatePeriod) ->
+	receive
+	after UpdatePeriod ->
+		amber_client_dispatcher:update_robot_states()
+	end,
+	states_updater(UpdatePeriod).
 
 %% Callbacks
 
@@ -38,13 +77,47 @@ handle_call(stop, _From, State) ->
 handle_call(_Request, _From, State) ->
 	{reply, ok, State}.
 
-handle_cast({update_fear_factor, RobotName, FearFactor}, #state{ff_dict = FFDict} = State) ->
-	NewFFDict = dict:store(RobotName, FearFactor, FFDict),
-	{noreply, State#state{ff_dict = NewFFDict}};
+handle_cast({update_fear_factor, _RobotName, FearFactor}, State) ->
+	{noreply, State#state{my_ff = FearFactor}};
 
 handle_cast({send_wheels_cmd, _RobotName, WheelsCmd}, State) ->
 	amber_client_roboclaw:send_wheels_cmd(WheelsCmd),
 	{noreply, State};
+
+handle_cast(update_robot_states, State) ->
+	RobotStates = state_manager:get_states(),
+
+	Fun = fun (_RobotName, MS) ->
+		#robot_state{
+			x = MS#robot_manager_state.x,
+			y = MS#robot_manager_state.x,
+			theta = MS#robot_manager_state.theta,
+			timestamp = MS#robot_manager_state.timestamp
+		}
+	end,
+	RobotsDict = dict:map(Fun, RobotStates),
+
+	FfFun = fun (_RobotName, MS) ->
+		MS#robot_manager_state.ff
+	end,
+	FFDict = dict:map(FfFun, RobotStates),
+
+	{noreply, State#state{robots_dict = RobotsDict, ff_dict = FFDict}};
+
+handle_cast({update_my_location, MyLocation}, 
+	#state{robot_name = RobotName, my_ff = FF} = State) ->
+	
+	%io:format("My location updated~n"),
+
+	state_manager:update(RobotName, {
+		MyLocation#location.x,
+		MyLocation#location.y,
+		MyLocation#location.alfa,
+		FF,
+		MyLocation#location.timestamp
+		}),
+
+	{noreply, State#state{my_location = MyLocation}};
  
 handle_cast(_Msg, State) ->
 	{noreply, State}.

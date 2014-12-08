@@ -109,12 +109,13 @@ class StateMsgType(Enum):
 
 
 class StateMsg:
-    def __init__(self, robot_name, timestamp, algorithm, type):
+    def __init__(self, robot_name, timestamp, algorithm, base_ff, type):
         self._robot_name = robot_name
         self._timestamp = timestamp
         self._type = type
         self._algorith = algorithm
         self._distance = None
+        self._base_ff = base_ff
 
     def get_robot_name(self):
         return self._robot_name
@@ -130,6 +131,9 @@ class StateMsg:
 
     def get_algorithm(self):
         return self._algorith
+
+    def get_base_ff(self):
+        return self._base_ff
 
     def set_distance(self, distance):
         self._distance = distance

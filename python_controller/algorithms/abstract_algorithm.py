@@ -15,12 +15,11 @@ from kalman.location_kalman import LocationKalman
 from kalman.angle_kalman import AngleKalman
 
 
-
 class AbstractAlgorithm(object):
-    SAVE_STATES = True
+    SAVE_STATES = False
 
-    INTERVAL = 0.02 #s
-    MEASURE_STEPS = 50 * 5 # 5s
+    INTERVAL = 0.02  # s
+    MEASURE_STEPS = 50 * 5  # 5s
     AVG_TIMES_NUM = 10
 
     def __init__(self, controller, robot_name):
@@ -74,7 +73,7 @@ class AbstractAlgorithm(object):
     def loop(self):
         update_state_times = deque(maxlen=self.AVG_TIMES_NUM)
         predict_times = deque(maxlen=self.AVG_TIMES_NUM)
-        #loop_times = deque(maxlen=self.AVG_TIMES_NUM)
+        # loop_times = deque(maxlen=self.AVG_TIMES_NUM)
         send_vis_times = deque(maxlen=self.AVG_TIMES_NUM)
 
         update_state_avg = 0.0
@@ -92,12 +91,10 @@ class AbstractAlgorithm(object):
             update_state_avg = sum(update_state_times) / float(len(update_state_times))
 
             if state_changed:
-
                 self._predict()
                 t3 = time.time()
                 predict_times.appendleft(t3 - t2)
                 predict_avg = sum(predict_times) / float(len(predict_times))
-
 
                 avail_time = max(0.0, self.INTERVAL - update_state_avg - predict_avg - send_vis_avg)
                 self._loop(avail_time)
@@ -119,7 +116,7 @@ class AbstractAlgorithm(object):
         self._send_robot_command(RobotCommand(0, 0, 0, 0))
 
     def _send_robot_command(self, robot_command):
-        self._controller.send_robot_command(robot_command, self._own_fear_factor)
+        self._controller.send_robot_command(robot_command, self._base_fear_factor)
 
     @staticmethod
     def _random_base_fear_factor():
@@ -153,7 +150,8 @@ class AbstractAlgorithm(object):
         self._send_state_msg(StateMsgType.start)
 
     def _send_state_msg(self, type):
-        msg = StateMsg(self._robot_name, self._own_robot['timestamp'], self.__class__.__name__, type)
+        msg = StateMsg(self._robot_name, self._own_robot['timestamp'], self.__class__.__name__, self._base_fear_factor,
+                       type)
         msg.set_distance(self._odometer)
         self._controller.send_vis_update(msg)
 

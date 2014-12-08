@@ -1,10 +1,12 @@
--file("src/drivermsg_pb.erl", 1).
+-file("src/location_pb.erl", 1).
 
--module(drivermsg_pb).
+-module(location_pb).
 
--export([encode_drivermsg/1, decode_drivermsg/1,
-	 delimited_decode_drivermsg/1, encode_driverhdr/1,
-	 decode_driverhdr/1, delimited_decode_driverhdr/1]).
+-export([encode_location/1, decode_location/1,
+	 delimited_decode_location/1, encode_drivermsg/1,
+	 decode_drivermsg/1, delimited_decode_drivermsg/1,
+	 encode_driverhdr/1, decode_driverhdr/1,
+	 delimited_decode_driverhdr/1]).
 
 -export([has_extension/2, extension_size/1,
 	 get_extension/2, set_extension/3]).
@@ -12,6 +14,8 @@
 -export([decode_extensions/1]).
 
 -export([encode/1, decode/2, delimited_decode/2]).
+
+-record(location, {x, y, p, alfa, timestamp}).
 
 -record(drivermsg,
 	{type, synnum, acknum, listenernum, '$extensions'}).
@@ -22,6 +26,12 @@ encode([]) -> [];
 encode(Records) when is_list(Records) ->
     delimited_encode(Records);
 encode(Record) -> encode(element(1, Record), Record).
+
+encode_location(Records) when is_list(Records) ->
+    delimited_encode(Records);
+encode_location(Record)
+    when is_record(Record, location) ->
+    encode(location, Record).
 
 encode_drivermsg(Records) when is_list(Records) ->
     delimited_encode(Records);
@@ -42,7 +52,11 @@ encode(driverhdr, Record) ->
 encode(drivermsg, Records) when is_list(Records) ->
     delimited_encode(Records);
 encode(drivermsg, Record) ->
-    [iolist(drivermsg, Record) | encode_extensions(Record)].
+    [iolist(drivermsg, Record) | encode_extensions(Record)];
+encode(location, Records) when is_list(Records) ->
+    delimited_encode(Records);
+encode(location, Record) ->
+    [iolist(location, Record) | encode_extensions(Record)].
 
 encode_extensions(#drivermsg{'$extensions' =
 				 Extends}) ->
@@ -81,7 +95,19 @@ iolist(drivermsg, Record) ->
 	  []),
      pack(5, optional,
 	  with_default(Record#drivermsg.listenernum, none),
-	  uint32, [])].
+	  uint32, [])];
+iolist(location, Record) ->
+    [pack(1, optional,
+	  with_default(Record#location.x, none), double, []),
+     pack(2, optional, with_default(Record#location.y, none),
+	  double, []),
+     pack(3, optional, with_default(Record#location.p, none),
+	  double, []),
+     pack(4, optional,
+	  with_default(Record#location.alfa, none), double, []),
+     pack(5, optional,
+	  with_default(Record#location.timestamp, none), double,
+	  [])].
 
 with_default(Default, Default) -> undefined;
 with_default(Val, _) -> Val.
@@ -153,6 +179,9 @@ int_to_enum(devicetype, 2) -> 'ROBOCLAW';
 int_to_enum(devicetype, 1) -> 'NINEDOF';
 int_to_enum(_, Val) -> Val.
 
+decode_location(Bytes) when is_binary(Bytes) ->
+    decode(location, Bytes).
+
 decode_drivermsg(Bytes) when is_binary(Bytes) ->
     decode(drivermsg, Bytes).
 
@@ -164,6 +193,9 @@ delimited_decode_driverhdr(Bytes) ->
 
 delimited_decode_drivermsg(Bytes) ->
     delimited_decode(drivermsg, Bytes).
+
+delimited_decode_location(Bytes) ->
+    delimited_decode(location, Bytes).
 
 delimited_decode(Type, Bytes) when is_binary(Bytes) ->
     delimited_decode(Type, Bytes, []).
@@ -200,7 +232,14 @@ decode(drivermsg, Bytes) when is_binary(Bytes) ->
 		  {{[], [], [], [], [], [], [], [], [], [], [], [], [],
 		    [], [], []}}}}],
     Decoded = decode(Bytes, Types, Defaults),
-    to_record(drivermsg, Decoded).
+    to_record(drivermsg, Decoded);
+decode(location, Bytes) when is_binary(Bytes) ->
+    Types = [{5, timestamp, double, []},
+	     {4, alfa, double, []}, {3, p, double, []},
+	     {2, y, double, []}, {1, x, double, []}],
+    Defaults = [],
+    Decoded = decode(Bytes, Types, Defaults),
+    to_record(location, Decoded).
 
 decode(<<>>, Types, Acc) ->
     reverse_repeated_fields(Acc, Types);
@@ -292,12 +331,25 @@ to_record(drivermsg, DecodedTuples) ->
 						   Record, Name, Val)
 			  end,
 			  #drivermsg{}, DecodedTuples),
-    decode_extensions(Record1).
+    decode_extensions(Record1);
+to_record(location, DecodedTuples) ->
+    Record1 = lists:foldr(fun ({_FNum, Name, Val},
+			       Record) ->
+				  set_record_field(record_info(fields,
+							       location),
+						   Record, Name, Val)
+			  end,
+			  #location{}, DecodedTuples),
+    Record1.
 
 decode_extensions(#drivermsg{'$extensions' =
 				 Extensions} =
 		      Record) ->
-    Types = [],
+    Types = [{61, currentLocation, location, [is_record]},
+	     {60, get_location, bool, []},
+	     {5, listenerNum, uint32, []}, {4, ackNum, uint32, []},
+	     {3, synNum, uint32, []},
+	     {2, type, drivermsg_msgtype, []}],
     NewExtensions = decode_extensions(Types,
 				      dict:to_list(Extensions), []),
     Record#drivermsg{'$extensions' = NewExtensions};
@@ -376,8 +428,62 @@ extension_size(#drivermsg{'$extensions' =
     dict:size(Extensions);
 extension_size(_) -> 0.
 
+has_extension(#drivermsg{'$extensions' = Extensions},
+	      5) ->
+    dict:is_key(5, Extensions);
+has_extension(#drivermsg{'$extensions' = Extensions},
+	      listenernum) ->
+    dict:is_key(listenernum, Extensions);
+has_extension(#drivermsg{'$extensions' = Extensions},
+	      4) ->
+    dict:is_key(4, Extensions);
+has_extension(#drivermsg{'$extensions' = Extensions},
+	      acknum) ->
+    dict:is_key(acknum, Extensions);
+has_extension(#drivermsg{'$extensions' = Extensions},
+	      3) ->
+    dict:is_key(3, Extensions);
+has_extension(#drivermsg{'$extensions' = Extensions},
+	      synnum) ->
+    dict:is_key(synnum, Extensions);
+has_extension(#drivermsg{'$extensions' = Extensions},
+	      2) ->
+    dict:is_key(2, Extensions);
+has_extension(#drivermsg{'$extensions' = Extensions},
+	      type) ->
+    dict:is_key(type, Extensions);
+has_extension(#drivermsg{'$extensions' = Extensions},
+	      61) ->
+    dict:is_key(61, Extensions);
+has_extension(#drivermsg{'$extensions' = Extensions},
+	      currentlocation) ->
+    dict:is_key(currentlocation, Extensions);
+has_extension(#drivermsg{'$extensions' = Extensions},
+	      60) ->
+    dict:is_key(60, Extensions);
+has_extension(#drivermsg{'$extensions' = Extensions},
+	      get_location) ->
+    dict:is_key(get_location, Extensions);
 has_extension(_Record, _FieldName) -> false.
 
+get_extension(Record, get_location)
+    when is_record(Record, drivermsg) ->
+    get_extension(Record, 60);
+get_extension(Record, currentlocation)
+    when is_record(Record, drivermsg) ->
+    get_extension(Record, 61);
+get_extension(Record, type)
+    when is_record(Record, drivermsg) ->
+    get_extension(Record, 2);
+get_extension(Record, synnum)
+    when is_record(Record, drivermsg) ->
+    get_extension(Record, 3);
+get_extension(Record, acknum)
+    when is_record(Record, drivermsg) ->
+    get_extension(Record, 4);
+get_extension(Record, listenernum)
+    when is_record(Record, drivermsg) ->
+    get_extension(Record, 5);
 get_extension(#drivermsg{'$extensions' = Extensions},
 	      Int)
     when is_integer(Int) ->
@@ -388,5 +494,42 @@ get_extension(#drivermsg{'$extensions' = Extensions},
     end;
 get_extension(_Record, _FieldName) -> undefined.
 
+set_extension(#drivermsg{'$extensions' = Extensions} =
+		  Record,
+	      listenernum, Value) ->
+    NewExtends = dict:store(5,
+			    {optional, Value, uint32, none}, Extensions),
+    {ok, Record#drivermsg{'$extensions' = NewExtends}};
+set_extension(#drivermsg{'$extensions' = Extensions} =
+		  Record,
+	      acknum, Value) ->
+    NewExtends = dict:store(4,
+			    {optional, Value, uint32, none}, Extensions),
+    {ok, Record#drivermsg{'$extensions' = NewExtends}};
+set_extension(#drivermsg{'$extensions' = Extensions} =
+		  Record,
+	      synnum, Value) ->
+    NewExtends = dict:store(3,
+			    {optional, Value, uint32, none}, Extensions),
+    {ok, Record#drivermsg{'$extensions' = NewExtends}};
+set_extension(#drivermsg{'$extensions' = Extensions} =
+		  Record,
+	      type, Value) ->
+    NewExtends = dict:store(2,
+			    {required, Value, drivermsg_msgtype, none},
+			    Extensions),
+    {ok, Record#drivermsg{'$extensions' = NewExtends}};
+set_extension(#drivermsg{'$extensions' = Extensions} =
+		  Record,
+	      currentlocation, Value) ->
+    NewExtends = dict:store(61,
+			    {optional, Value, location, none}, Extensions),
+    {ok, Record#drivermsg{'$extensions' = NewExtends}};
+set_extension(#drivermsg{'$extensions' = Extensions} =
+		  Record,
+	      get_location, Value) ->
+    NewExtends = dict:store(60,
+			    {optional, Value, bool, none}, Extensions),
+    {ok, Record#drivermsg{'$extensions' = NewExtends}};
 set_extension(Record, _, _) -> {error, Record}.
 

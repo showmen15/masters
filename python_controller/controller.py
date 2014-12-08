@@ -40,7 +40,7 @@ class Controller:
         self._target = None
         self._randomize_target = True
 
-        if True:
+        if False:
             self._samples_file = open("/tmp/%s.samples" % (self._robot_name, ), 'w')
         else:
             self._samples_file = None
@@ -193,7 +193,7 @@ if __name__ == "__main__":
     roson_file = open(sys.argv[2])
     roson = json.load(roson_file)
 
-    controller = Controller(robot_name, SimpleAlgorithm, roson)
+    controller = Controller(robot_name, FearfulAlgorithm, roson)
 
     @atexit.register
     def exit_handler():

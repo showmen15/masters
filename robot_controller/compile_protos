@@ -7,7 +7,14 @@ main([]) ->
 	protobuffs_compile:generate_source("../protos/roboss.proto",Options),
 
 	Options2 = [{output_src_dir,"apps/client/src"},{output_include_dir,"apps/client/include"}],
-	protobuffs_compile:generate_source("../protos/client.proto",Options2);
+	protobuffs_compile:generate_source("../protos/client.proto",Options2),
+
+	Options3 = [{output_src_dir,"apps/amber_client/src"},
+		{output_include_dir,"apps/amber_client/include"},
+		{imports_dir, ["../protos/"]}],
+	protobuffs_compile:generate_source("../protos/roboclaw.proto", Options3),
+	protobuffs_compile:generate_source("../protos/location.proto", Options3),
+	protobuffs_compile:generate_source("../protos/drivermsg.proto", Options3);
 
 
 main ([File]) ->

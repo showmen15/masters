@@ -11,16 +11,16 @@
 
 start(_StartType, _StartArgs) ->
 	application:load(client),
-	amber_client_sup:start_link().
-	%net_kernel:connect(RobossNode),
-	%global:sync(),
+	{ok, StateManager} = application:get_env(state_manager_node),
+	net_kernel:connect(StateManager),
+	global:sync(),
 
-	%case roboss_serv:is_alive() of
-	%	false ->  
-	%		{stop, "Roboss node not connected"};
-	%	true ->
-	%		roboss_client_sup:start_link()
-	%end.    
+	case state_manager:is_alive() of
+		false ->  
+			{error, "state_manager node not connected"};
+		true ->
+			amber_client_sup:start_link()
+	end.    
 
 stop(_State) ->
     ok.

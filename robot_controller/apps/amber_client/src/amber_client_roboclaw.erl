@@ -24,7 +24,7 @@ send_wheels_cmd(WheelsCmd) ->
 init(_Args) ->
 	{ok, AmberAddress} = application:get_env(amber_client, amber_address),
 	{ok, AmberPort} = application:get_env(amber_client, amber_port),
-	{ok, Socket} = gen_udp:open(0),
+	{ok, Socket} = gen_udp:open(0, [binary, {active, false}]),
 
 	io:format("~s started~n", [?MODULE]),
 	{ok, #state{address = AmberAddress, port = AmberPort, socket = Socket}}.

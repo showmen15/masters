@@ -1,4 +1,6 @@
 {
+  "name": "gate",
+  "timeout": 120,
   "walls": [
     {
       "type": "wall",

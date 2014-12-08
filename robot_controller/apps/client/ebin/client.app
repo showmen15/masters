@@ -8,7 +8,5 @@
                     {client_command,"controller.py"},
                     {roson_dir,"../models/"},
                     {roboss_node,roboss@rose}]},
-              {modules,[client_app,client_clients_sup,client_controller,
-                        client_controllers_sup,client_pb,client_serv,
-                        client_state_manager,client_sup,client_udp_serv,
-                        client_udp_server,listener]}]}.
+              {modules,[client_app,client_controller,client_controllers_sup,
+                        client_dispatcher,client_pb,client_sup]}]}.

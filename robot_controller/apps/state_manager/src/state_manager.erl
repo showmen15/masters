@@ -4,7 +4,7 @@
 
 -include("include/records.hrl").
 
--export([start_link/0, stop/0, update/2, get_states/0, evict/0, start_evicter/0, evicter/1]).
+-export([start_link/0, stop/0, update/2, get_states/0, evict/0, start_evicter/0, evicter/1, is_alive/0]).
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
 -record(state, {
@@ -20,6 +20,12 @@ start_link() ->
 
 stop() ->
 	gen_server:call({global, ?MODULE}, stop).
+
+is_alive() ->
+	case global:whereis_name(?MODULE) of
+		undefined -> false;
+		_ -> true
+	end.
 
 update(RobotName, {_X, _Y, _Theta, _FF, _Timestamp} = RobotState) ->
 	gen_server:cast({global, ?MODULE}, {update, RobotName, RobotState, self()}).

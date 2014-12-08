@@ -31,7 +31,7 @@ class RobotVisServer(QUdpSocket):
     MONGO_DB = 'robots'
     MONGO_COLLECTION = 'testcases'
 
-    def __init__(self, roson):
+    def __init__(self, roson, **kwargs):
         super(RobotVisServer, self).__init__()
 
         self._name = roson['name']
@@ -40,6 +40,11 @@ class RobotVisServer(QUdpSocket):
         self._windows_dict = {}
         self._walls = []
         self._bounds = None
+
+        if 'codename' in kwargs and kwargs['codename'] is not None:
+            self._codename = kwargs['codename']
+        else:
+            self._codename = None
 
         self._auto_mode = False
         self._robots_data = None
@@ -117,9 +122,9 @@ class RobotVisServer(QUdpSocket):
         print "starting run: %i" % (self._runs_counter, )
 
     def _auto_timeout(self):
-        self._finish_auto_run()
+        self._finish_auto_run(True)
 
-    def _finish_auto_run(self):
+    def _finish_auto_run(self, timeouted):
         print "finished run: %i" % (self._runs_counter, )
 
         finish_time = datetime.now()
@@ -130,8 +135,12 @@ class RobotVisServer(QUdpSocket):
             'start_time': self._start_time,
             'finish_time': finish_time,
             'total_time': total_time,
-            'robots': {}
+            'timeouted': timeouted,
+            'robots': []
         }
+
+        if self._codename is not None:
+            result['codename'] = self._codename
 
         try:
 
@@ -146,13 +155,15 @@ class RobotVisServer(QUdpSocket):
 
                 distance = 'distance' in robot_data and robot_data['distance'] or None
 
-                result['robots'][robot_name] = {
+                result['robots'].append ({
+                    'robot_name': robot_name,
                     'algorithm': robot_data['algorithm'],
                     'start_time': robot_data['start_time'],
                     'finish_time': finish_time,
                     'total_time': total_time,
-                    'distance': distance
-                }
+                    'distance': distance,
+                    'base_ff': robot_data['base_ff']
+                })
 
         except KeyError:
             print "testcase failed"
@@ -180,6 +191,7 @@ class RobotVisServer(QUdpSocket):
         if state_msg.get_type() == StateMsgType.start:
             self._robots_data[robot_name]['start_time'] = state_msg.get_timestamp()
             self._robots_data[robot_name]['algorithm'] = state_msg.get_algorithm()
+            self._robots_data[robot_name]['base_ff'] = state_msg.get_base_ff()
             self._robots_counter += 1
         elif state_msg.get_type() == StateMsgType.finish:
             self._robots_data[robot_name]['finish_time'] = state_msg.get_timestamp()
@@ -187,7 +199,7 @@ class RobotVisServer(QUdpSocket):
             self._robots_counter -= 1
 
         if self._robots_counter == 0:
-            self._finish_auto_run()
+            self._finish_auto_run(False)
 
 
     def start(self):
@@ -225,16 +237,20 @@ class RobotVisServer(QUdpSocket):
         self._bounds = (min(xs), min(ys)), (max(xs), max(ys))
 
 def main():
-    if len(sys.argv) != 2:
+    if len(sys.argv) < 2:
         print "Specify roson file"
         sys.exit(1)
+
+    codename = None
+    if len(sys.argv) == 3:
+        codename = sys.argv[2]
 
     json_file = open(sys.argv[1])
     roson = json.load(json_file)
 
     app = QtGui.QApplication(sys.argv)
 
-    server = RobotVisServer(roson)
+    server = RobotVisServer(roson, codename = codename)
     main_window = MainWindow(server)
 
     sys.exit(app.exec_())

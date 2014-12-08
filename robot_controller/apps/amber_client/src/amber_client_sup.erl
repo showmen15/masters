@@ -49,5 +49,25 @@ init(_Args) ->
 		[amber_client_roboclaw]
 	},
 
-    {ok, {{one_for_all, MaxRestart, MaxTime}, [SupSpec, DispatcherSpec, RoboclawClientSpec]}}.
+	LocationClientSpec = {
+		location_client,
+		{amber_client_location, start_link, []},
+		permanent,
+		1000,
+		worker,
+		[amber_client_location]
+	},
+
+	LocationUpdaterSpec = {
+		location_updater,
+		{amber_client_dispatcher, start_location_updater, []},
+		permanent,
+		1000,
+		worker,
+		[location_updater]
+	},
+
+    {ok, {{one_for_all, MaxRestart, MaxTime}, 
+    	[SupSpec, DispatcherSpec, RoboclawClientSpec, 
+    	LocationClientSpec, LocationUpdaterSpec]}}.
 

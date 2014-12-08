@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- /RobotsWorld.xml, jednostki w ukladzie SI -->
+<World name="box">
+	<Robots>
+		<Robot name="robot1" position_x="9.5" position_y="0.5" position_z="0.5" rotation_z="1.57" type="RobotCar"/>
+		<Robot name="robot2" position_x="8.5" position_y="0.5" position_z="0.5" rotation_z="1.57" type="RobotCar"/>
+	</Robots>
+	<Environment>
+		<Geoms>
+			<!-- ground -->
+			<Geom bouncyness="0.6" friction="1" position_x="5" position_y="1.5" position_z="0" rotation_x="0" rotation_y="0" rotation_z="0" size_x="10" size_y="3" size_z="0.1" type="box"/>
+			<!-- world walls -->
+			<Geom bouncyness="0.3" color="80003366" friction="0.0" position_x="5" position_y="0" position_z="0.2" rotation_x="0" rotation_y="0" rotation_z="0" size_x="10" size_y="0.1" size_z="0.4" type="box"/>
+			<Geom bouncyness="0.3" color="80003366" friction="0.0" position_x="0" position_y="0.5" position_z="0.2" rotation_x="0" rotation_y="0" rotation_z="0" size_x="0.1" size_y="1" size_z="0.4" type="box"/>
+			<Geom bouncyness="0.3" color="80003366" friction="0.0" position_x="1" position_y="1" position_z="0.2" rotation_x="0" rotation_y="0" rotation_z="0" size_x="2" size_y="0.1" size_z="0.4" type="box"/>
+			<Geom bouncyness="0.3" color="80003366" friction="0.0" position_x="2" position_y="2" position_z="0.2" rotation_x="0" rotation_y="0" rotation_z="0" size_x="0.1" size_y="2" size_z="0.4" type="box"/>
+			<Geom bouncyness="0.3" color="80003366" friction="0.0" position_x="3" position_y="3" position_z="0.2" rotation_x="0" rotation_y="0" rotation_z="0" size_x="2" size_y="0.1" size_z="0.4" type="box"/>
+			<Geom bouncyness="0.3" color="80003366" friction="0.0" position_x="4" position_y="2" position_z="0.2" rotation_x="0" rotation_y="0" rotation_z="0" size_x="0.1" size_y="2" size_z="0.4" type="box"/>
+			<Geom bouncyness="0.3" color="80003366" friction="0.0" position_x="7" position_y="1" position_z="0.2" rotation_x="0" rotation_y="0" rotation_z="0" size_x="6" size_y="0.1" size_z="0.4" type="box"/>
+			<Geom bouncyness="0.3" color="80003366" friction="0.0" position_x="10" position_y="0.5" position_z="0.2" rotation_x="0" rotation_y="0" rotation_z="0" size_x="0.1" size_y="1" size_z="0.4" type="box"/>
+		</Geoms>
+	</Environment>
+</World>
