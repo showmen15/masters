@@ -21,9 +21,6 @@ class ErlangPort:
                 (msg_size,) = struct.unpack(PACK, buf)
                 msg = os.read(STDIN, msg_size)
 
-                if self._logger.isEnabledFor('DEBUG'):
-                    self._logger.debug("Got message with length: %d" % (len(msg), ))
-
                 if len(msg) == msg_size:
                     return msg
 
@@ -38,9 +35,6 @@ class ErlangPort:
         try:
             if os.write(STDOUT, buf) != 2 or os.write(STDOUT, msg) != msg_size:
                 self.exit("Failed sending message")
-
-            if self._logger.isEnabledFor('DEBUG'):
-                self._logger.debug("Sent %d bytes" % (msg_size, ))
 
         except OSError as e:
             self.exit(e)

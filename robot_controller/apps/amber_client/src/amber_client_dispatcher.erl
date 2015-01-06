@@ -65,7 +65,7 @@ states_updater(UpdatePeriod) ->
 init(_Args) ->
 	io:format("~s started~n", [?MODULE]),
 	self() ! spawn_client,
-	{ok, RobotName} = init:get_argument(robot_name),
+	{ok, [[RobotName]]} = init:get_argument(robot_name),
 	{ok, #state{robot_name = RobotName}}.
 
 handle_call(request_state, _From, #state{robots_dict = Dict, ff_dict = FFDict} = State) ->
@@ -107,7 +107,7 @@ handle_cast(update_robot_states, State) ->
 handle_cast({update_my_location, MyLocation}, 
 	#state{robot_name = RobotName, my_ff = FF} = State) ->
 	
-	%io:format("My location updated~n"),
+	%io:format("~w ~w My location updated~n", [RobotName, MyLocation]),
 
 	state_manager:update(RobotName, {
 		MyLocation#location.x,

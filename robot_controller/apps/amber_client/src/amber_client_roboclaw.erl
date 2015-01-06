@@ -31,10 +31,10 @@ init(_Args) ->
 
 handle_cast({send_wheels_cmd, WheelsCmd}, State) ->
 	MotorsSpeed = #motorsspeed{
-		frontleftspeed = WheelsCmd#wheels_cmd.front_left,
-		frontrightspeed = WheelsCmd#wheels_cmd.front_right,
-		rearleftspeed = WheelsCmd#wheels_cmd.rear_left,
-		rearrightspeed = WheelsCmd#wheels_cmd.rear_right
+		frontleftspeed = round(WheelsCmd#wheels_cmd.front_left * 1000),
+		frontrightspeed = round(WheelsCmd#wheels_cmd.front_right * 1000),
+		rearleftspeed = round(WheelsCmd#wheels_cmd.rear_left * 1000),
+		rearrightspeed = round(WheelsCmd#wheels_cmd.rear_right * 1000)
 	},
 
 	{ok, Msg} = roboclaw_pb:set_extension(#drivermsg{

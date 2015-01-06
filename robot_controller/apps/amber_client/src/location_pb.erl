@@ -106,7 +106,7 @@ iolist(location, Record) ->
      pack(4, optional,
 	  with_default(Record#location.alfa, none), double, []),
      pack(5, optional,
-	  with_default(Record#location.timestamp, none), double,
+	  with_default(Record#location.timestamp, none), int64,
 	  [])].
 
 with_default(Default, Default) -> undefined;
@@ -234,7 +234,7 @@ decode(drivermsg, Bytes) when is_binary(Bytes) ->
     Decoded = decode(Bytes, Types, Defaults),
     to_record(drivermsg, Decoded);
 decode(location, Bytes) when is_binary(Bytes) ->
-    Types = [{5, timestamp, double, []},
+    Types = [{5, timestamp, int64, []},
 	     {4, alfa, double, []}, {3, p, double, []},
 	     {2, y, double, []}, {1, x, double, []}],
     Defaults = [],

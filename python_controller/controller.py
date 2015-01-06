@@ -69,7 +69,7 @@ class Controller:
         rc.fearFactor = fear_factor
 
         if self._logger.isEnabledFor('DEBUG'):
-            self._logger.debug("Sending RobotCommand, fl=%d, fr=%d, rl=%f, rr=%d"
+            self._logger.debug("Sending RobotCommand, fl=%f, fr=%f, rl=%f, rr=%f"
                                % (rc.frontLeft, rc.frontRight, rc.rearLeft, rc.rearRight))
 
         self._port.send_msg (cmd_msg.SerializeToString())
@@ -90,7 +90,8 @@ class Controller:
             state_msg.ParseFromString(msg)
 
             if self._logger.isEnabledFor('DEBUG'):
-                self._logger.debug("Received state message, ")
+                self._logger.debug("Received state message, robots: %d, " 
+                    % (len(state_msg.robotState)))
 
             return state_msg
         except Exception:

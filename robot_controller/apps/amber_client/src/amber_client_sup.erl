@@ -67,7 +67,17 @@ init(_Args) ->
 		[location_updater]
 	},
 
+	StatesUpdaterSpec = {
+		states_updater,
+		{amber_client_dispatcher, start_states_updater, []},
+		permanent,
+		1000,
+		worker,
+		[states_updater]
+	},
+
+
     {ok, {{one_for_all, MaxRestart, MaxTime}, 
     	[SupSpec, DispatcherSpec, RoboclawClientSpec, 
-    	LocationClientSpec, LocationUpdaterSpec]}}.
+    	LocationClientSpec, LocationUpdaterSpec, StatesUpdaterSpec]}}.
 
