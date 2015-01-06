@@ -83,6 +83,7 @@ handle_cast({update, RobotName, {X, Y, Theta, FF, Timestamp}, From}, #state{stat
 	end,
 
 	NewStates = dict:store(RobotName, RMS, OldStates),
+	io:format("update for ~s~n", [RobotName]),
 	{noreply, State#state{states = NewStates}};
 
 handle_cast(evict, #state{states = RobotStates, eviction_age = EvictionAge} = State) ->
