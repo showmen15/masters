@@ -1,0 +1,154 @@
+{
+  "name": "lab_one",
+  "timeout": 120,
+  "walls": [
+    {
+      "type": "wall",
+      "id": "Wall0",
+      "width": 0.1,
+      "height": 1.0,
+      "color": "80003366",
+      "from": {
+        "x": 0.0,
+        "y": 0.0
+      },
+      "to": {
+        "x": 0.0,
+        "y": 4.9
+      }
+    },
+    {
+      "type": "wall",
+      "id": "Wall1",
+      "width": 0.1,
+      "height": 1.0,
+      "color": "80003366",
+      "from": {
+        "x": 0.0,
+        "y": 4.9
+      },
+      "to": {
+        "x": 3.0,
+        "y": 4.9
+      }
+    },
+    {
+      "type": "wall",
+      "id": "Wall2",
+      "width": 0.1,
+      "height": 1.0,
+      "color": "80003366",
+      "from": {
+        "x": 3.0,
+        "y": 3.3
+      },
+      "to": {
+        "x": 3.0,
+        "y": 4.9
+      }
+    },
+    {
+      "type": "wall",
+      "id": "Wall3",
+      "width": 0.1,
+      "height": 1.0,
+      "color": "80003366",
+      "from": {
+        "x": 2.1,
+        "y": 3.3
+      },
+      "to": {
+        "x": 3.0,
+        "y": 3.3
+      }
+    },
+    {
+      "type": "wall",
+      "id": "Wall4",
+      "width": 0.1,
+      "height": 1.0,
+      "color": "80003366",
+      "from": {
+        "x": 2.3,
+        "y": 0.4
+      },
+      "to": {
+        "x": 2.3,
+        "y": 3.3
+      }
+    },
+    {
+      "type": "wall",
+      "id": "Wall5",
+      "width": 0.1,
+      "height": 1.0,
+      "color": "80003366",
+      "from": {
+        "x": 0.7,
+        "y": 0.4
+      },
+      "to": {
+        "x": 2.3,
+        "y": 0.4
+      }
+    },
+    {
+      "type": "wall",
+      "id": "Wall6",
+      "width": 0.1,
+      "height": 1.0,
+      "color": "80003366",
+      "from": {
+        "x": 0.7,
+        "y": 0.0
+      },
+      "to": {
+        "x": 0.7,
+        "y": 0.4
+      }
+    },
+    {
+      "type": "wall",
+      "id": "Wall7",
+      "width": 0.1,
+      "height": 1.0,
+      "color": "80003366",
+      "from": {
+        "x": 0.0,
+        "y": 0.0
+      },
+      "to": {
+        "x": 0.7,
+        "y": 0.0
+      }
+    }
+  ],
+  "gates": [],
+  "spaces": [],
+  "nodes": [],
+  "robots": [
+    {
+      "type": "robot",
+      "id": "Robot8",
+      "kind": "RobotCar",
+      "location": {
+        "x": 1.0,
+        "y": 1.0,
+        "z": 1.0,
+        "alpha": 0.0001
+      },
+       "target": {
+        "x": 2.5,
+        "y": 4.5
+       }
+    }
+  ],
+  "victims": [],
+  "space-walls": [],
+  "space-gates": [],
+  "space-nodes": [],
+  "space-robots": [],
+  "space-victims": [],
+  "gate-nodes": [],
+  "node-nodes": []
+}

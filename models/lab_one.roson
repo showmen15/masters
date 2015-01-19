@@ -1,0 +1,148 @@
+{
+  "name": "lab_one",
+  "timeout": 120,
+  "walls": [
+    {
+      "type": "wall",
+      "id": "Wall5",
+      "width": 0.1,
+      "height": 1.0,
+      "color": "80003366",
+      "from": {
+        "x": 0.0,
+        "y": 0.4
+      },
+      "to": {
+        "x": 0.0,
+        "y": 4.9
+      }
+    },
+    {
+      "type": "wall",
+      "id": "Wall6",
+      "width": 0.1,
+      "height": 1.0,
+      "color": "80003366",
+      "from": {
+        "x": 0.0,
+        "y": 4.9
+      },
+      "to": {
+        "x": 2.3,
+        "y": 4.9
+      }
+    },
+    {
+      "type": "wall",
+      "id": "Wall7",
+      "width": 0.1,
+      "height": 1.0,
+      "color": "80003366",
+      "from": {
+        "x": 2.3,
+        "y": 0.4
+      },
+      "to": {
+        "x": 2.3,
+        "y": 4.9
+      }
+    },
+    {
+      "type": "wall",
+      "id": "Wall8",
+      "width": 0.1,
+      "height": 1.0,
+      "color": "80003366",
+      "from": {
+        "x": 0.0,
+        "y": 0.4
+      },
+      "to": {
+        "x": 2.3,
+        "y": 0.4
+      }
+    }
+  ],
+  "gates": [],
+  "spaces": [
+    {
+      "type": "space",
+      "id": "Space9",
+      "kind": "room",
+      "name": null,
+      "function": null,
+      "expectedPersonCount": 7,
+      "area": 10.35,
+      "diameter": 5.0537115073973107
+    }
+  ],
+  "nodes": [
+    {
+      "type": "node",
+      "id": "Node10",
+      "kind": "spaceNode",
+      "position": {
+        "x": 1.15,
+        "y": 2.65
+      },
+       "target": {
+        "x": 1.15,
+        "y": 4.5
+       }
+    }
+  ],
+  "robots": [
+    {
+      "type": "robot",
+      "id": "panda1",
+      "kind": "RobotCar",
+      "location": {
+        "x": 1.15,
+        "y": 0.9,
+        "z": 1.0,
+        "alpha": 0.0001
+      }
+    }
+  ],
+  "victims": [],
+  "space-walls": [
+    {
+      "type": "space-wall",
+      "spaceId": "Space9",
+      "wallId": "Wall5"
+    },
+    {
+      "type": "space-wall",
+      "spaceId": "Space9",
+      "wallId": "Wall6"
+    },
+    {
+      "type": "space-wall",
+      "spaceId": "Space9",
+      "wallId": "Wall7"
+    },
+    {
+      "type": "space-wall",
+      "spaceId": "Space9",
+      "wallId": "Wall8"
+    }
+  ],
+  "space-gates": [],
+  "space-nodes": [
+    {
+      "type": "space-node",
+      "spaceId": "Space9",
+      "nodeId": "Node10"
+    }
+  ],
+  "space-robots": [
+    {
+      "type": "space-robot",
+      "spaceId": "Space9",
+      "robotId": "Robot4"
+    }
+  ],
+  "space-victims": [],
+  "gate-nodes": [],
+  "node-nodes": []
+}
