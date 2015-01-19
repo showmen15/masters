@@ -90,7 +90,7 @@ handle_cast(update_robot_states, State) ->
 	Fun = fun (_RobotName, MS) ->
 		#robot_state{
 			x = MS#robot_manager_state.x,
-			y = MS#robot_manager_state.x,
+			y = MS#robot_manager_state.y,
 			theta = MS#robot_manager_state.theta,
 			timestamp = MS#robot_manager_state.timestamp
 		}
@@ -107,12 +107,14 @@ handle_cast(update_robot_states, State) ->
 handle_cast({update_my_location, MyLocation}, 
 	#state{robot_name = RobotName, my_ff = FF} = State) ->
 	
-	%io:format("~w ~w My location updated~n", [RobotName, MyLocation]),
+	io:format("x: ~f, y: ~f, a: ~f, ts: ~w ~n", 
+		[MyLocation#location.x, MyLocation#location.y, 
+		-MyLocation#location.alfa + 1.57, MyLocation#location.timestamp]),
 
 	state_manager:update(RobotName, {
 		MyLocation#location.x,
 		MyLocation#location.y,
-		MyLocation#location.alfa,
+		-MyLocation#location.alfa  + 1.57,
 		FF,
 		MyLocation#location.timestamp
 		}),

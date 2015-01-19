@@ -45,7 +45,7 @@ class Controller:
         else:
             self._samples_file = None
 
-        self._vis_client = RobotVisClient("127.0.0.1", 9010)
+        self._vis_client = RobotVisClient("sm", 9010)
 
         self._parse_roson()
         self.send_ack()
