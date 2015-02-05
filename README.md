@@ -67,7 +67,14 @@ cd robot_controller
 cd robot_controller
 ./start_state_manager.sh
 ```
+2 . Konfiguracja
 
+```
+/etc/hosts
+
+127.0.0.2       ms
+
+```
 ### Kroki do wykonania na maszynie monitorującej ###
 1 . Uruchom aplikację wizualizującą
 
