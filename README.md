@@ -4,6 +4,26 @@
 
 [Schemat algorytmu na robocie](http://i.imgur.com/cBP1wVj.png)
 
+## Requirements ##
+
+python
+rebar (https://github.com/basho/rebar) [git clone https://github.com/basho/rebar.git]
+logiviw (https://pythonhosted.org/logview/)
+
+apt-get install erlang
+apt-get install python-enum34
+apt-get install python-minimal
+apt-get install feedforward_agc_cc
+apt-get install VisWindow
+apt-get install python-gnuradio-analog
+apt-get install gnuradio
+pip install pymongo
+
+Dodaj do $PATH
+rebar
+logview
+
+
 ## Kompilowanie aplikacji erlangowych ##
 
 ```
@@ -47,7 +67,7 @@ cd robot_controller
 
 ```
 cd robot_controller
-./start_state_manager
+./start_state_manager.sh
 ```
 
 ### Kroki do wykonania na maszynie monitorującej ###
