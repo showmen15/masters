@@ -6,6 +6,7 @@
 
 ## Requirements ##
 
+```
 python
 rebar (https://github.com/basho/rebar) [git clone https://github.com/basho/rebar.git]
 logiviw (https://pythonhosted.org/logview/)
@@ -22,7 +23,7 @@ pip install pymongo
 Dodaj do $PATH
 rebar
 logview
-
+```
 
 ## Kompilowanie aplikacji erlangowych ##
 
