@@ -14,9 +14,6 @@ logiviw (https://pythonhosted.org/logview/)
 apt-get install erlang
 apt-get install python-enum34
 apt-get install python-minimal
-apt-get install feedforward_agc_cc
-apt-get install VisWindow
-apt-get install python-gnuradio-analog
 apt-get install gnuradio
 pip install pymongo
 
