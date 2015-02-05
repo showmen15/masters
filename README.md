@@ -72,7 +72,7 @@ cd robot_controller
 ```
 /etc/hosts
 
-127.0.0.2       ms ???
+127.0.0.2       sm ???
 
 ```
 ### Kroki do wykonania na maszynie monitorującej ###
