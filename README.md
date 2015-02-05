@@ -16,6 +16,7 @@ apt-get install python-enum34
 apt-get install python-minimal
 apt-get install gnuradio
 pip install pymongo
+pip install pyzmq
 
 Dodaj do $PATH
 rebar
