@@ -15,8 +15,10 @@ apt-get install erlang
 apt-get install python-enum34
 apt-get install python-minimal
 apt-get install gnuradio
+sudo apt-get install python-numpy
 pip install pymongo
 pip install pyzmq
+
 
 Dodaj do $PATH
 rebar
