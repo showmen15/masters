@@ -28,6 +28,7 @@ logview
 ```
 apt-get install python-numpy
 apt-get install python-enum
+easy_install pykalman
 easy_install numpy scipy Sphinx numpydoc nose pykalman
 ```
 
