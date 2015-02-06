@@ -15,7 +15,6 @@ apt-get install erlang
 apt-get install python-enum34
 apt-get install python-minimal
 apt-get install gnuradio
-sudo apt-get install python-numpy
 pip install pymongo
 pip install pyzmq
 
@@ -24,6 +23,14 @@ Dodaj do $PATH
 rebar
 logview
 ```
+
+##  Requirements Panda ##
+```
+apt-get install python-numpy
+apt-get install python-enum
+easy_install numpy scipy Sphinx numpydoc nose pykalman
+```
+
 
 ## Kompilowanie aplikacji erlangowych ##
 
