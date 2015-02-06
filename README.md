@@ -24,7 +24,7 @@ rebar
 logview
 ```
 
-##  Requirements Panda ##
+##  Requirements Robot ##
 ```
 apt-get install python-numpy
 apt-get install python-enum
