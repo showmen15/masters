@@ -1,4 +1,6 @@
 {
+  "name": "testSzsz",
+  "timeout": 60,
   "walls": [
     {
       "type": "wall",
@@ -164,12 +166,16 @@
     {
       "type": "robot",
       "id": "Robot8",
-      "kind": "robot",
+      "kind": "RobotCar",
       "location": {
-        "x": 1.0,
-        "y": 1.0,
+        "x": 1.2739,
+        "y": 0.5743,
         "z": 1.0,
-        "alpha": 0.0001
+        "alpha": 1.68
+      },
+	  "target": {
+        "x": 1.24,
+        "y": 4.28
       }
     }
   ],
