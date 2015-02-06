@@ -92,5 +92,5 @@ python server.py ../../models/3vs1.roson
 
 2 . Uruchom algorytm
 ```
-cd robot_controler
+cd robot_controller
 ./start_amber_client.sh 3vs1
