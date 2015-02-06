@@ -18,10 +18,21 @@ apt-get install gnuradio
 pip install pymongo
 pip install pyzmq
 
+
 Dodaj do $PATH
 rebar
 logview
 ```
+
+##  Requirements Robot ##
+```
+apt-get install python-numpy
+apt-get install python-enum
+easy_install pykalman
+easy_install numpy scipy Sphinx numpydoc nose pykalman
+apt-get install python-qt4
+```
+
 
 ## Kompilowanie aplikacji erlangowych ##
 
@@ -92,5 +103,5 @@ python server.py ../../models/3vs1.roson
 
 2 . Uruchom algorytm
 ```
-cd robot_controler
+cd robot_controller
 ./start_amber_client.sh 3vs1
