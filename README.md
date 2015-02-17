@@ -89,7 +89,7 @@ cd robot_controller
 ```
 /etc/hosts
 
-127.0.0.2       sm 
+<IP localhost (127.0.0.2)>       sm 
 
 ```
 ### Kroki do wykonania na maszynie monitorującej ###
