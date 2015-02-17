@@ -28,9 +28,14 @@ logview
 ```
 apt-get install python-numpy
 apt-get install python-enum
+pip install scipy
+pip install --upgrade setuptools
+pip install scipy
 easy_install pykalman
+apt-get install liblapack-dev
 easy_install numpy scipy Sphinx numpydoc nose pykalman
 apt-get install python-qt4
+
 ```
 
 
@@ -84,7 +89,7 @@ cd robot_controller
 ```
 /etc/hosts
 
-127.0.0.2       sm ???
+127.0.0.2       sm 
 
 ```
 ### Kroki do wykonania na maszynie monitorującej ###
@@ -101,7 +106,14 @@ python server.py ../../models/3vs1.roson
 
 1 . Uruchom `amber`. Upewnij się, że aktywne są sterowniki `location`, `hokuyo` i `roboclaw`.
 
-2 . Uruchom algorytm
+2 . Konfiguracja
+
+```
+/etc/hosts
+
+<IP komputera z uruchomionym procesem state manager>       sm 
+
+3 . Uruchom algorytm
 ```
 cd robot_controller
 ./start_amber_client.sh 3vs1
