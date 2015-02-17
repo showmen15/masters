@@ -113,7 +113,11 @@ python server.py ../../models/3vs1.roson
 
 <IP komputera z uruchomionym procesem state manager>       sm 
 
+```
+
 3 . Uruchom algorytm
+
 ```
 cd robot_controller
 ./start_amber_client.sh 3vs1
+```
