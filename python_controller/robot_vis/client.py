@@ -30,7 +30,7 @@ class RobotVisClient(QUdpSocket):
 
 
 def main():
-    client = RobotVisClient("127.0.0.1", 9010)
+    client = RobotVisClient("sm", 9010)
     data = cPickle.dumps([1,2,3])
     client.send_update(data)
 
