@@ -12,7 +12,7 @@ from utils.maze_util import MazeUtil
 from operator import itemgetter
 
 class FearfulAlgorithm(AbstractAlgorithm):
-    CRUISE_SPEED = 0.5
+    CRUISE_SPEED = 0.35
     ANGLE_MEASURE_STEPS = 5
     CIRCLES_RADIUS = 0.5
     VARIANTS_MAX_TIME = 0.015
