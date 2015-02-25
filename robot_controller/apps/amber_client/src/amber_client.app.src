@@ -12,7 +12,7 @@
     {amber_address, "127.0.0.1"},
     {amber_port, 26233},
     {state_manager_node, state_manager@sm},
-    {location_refresh_period, 1000},
+    {location_refresh_period, 200},
     {states_refresh_period, 250}
   ]}
  ]}.
