@@ -328,8 +328,8 @@ class FearfulAlgorithm(AbstractAlgorithm):
         if abs(omega) > 0.5:
             v = 0.0
 
-        if abs(v) > CRUISE_SPEED
-			v = math.copysign(CRUISE_SPEED,v)
+        if abs(v) > 2 * CRUISE_SPEED
+	    v = math.copysign(CRUISE_SPEED,v)
         
         return v, omega
 
