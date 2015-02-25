@@ -1,0 +1,433 @@
+{
+  "name": "MijankaLab",
+  "timeout": 60,
+  "walls": [
+    {
+      "type": "wall",
+      "id": "Wall78",
+      "width": 0.1,
+      "height": 0.3,
+      "color": "ff8080ff",
+      "from": {
+        "x": 0.8,
+        "y": 0.5
+      },
+      "to": {
+        "x": 1.6,
+        "y": 0.5
+      }
+    },
+    {
+      "type": "wall",
+      "id": "Wall80",
+      "width": 0.1,
+      "height": 0.3,
+      "color": "ff8080ff",
+      "from": {
+        "x": 0.0,
+        "y": 0.5
+      },
+      "to": {
+        "x": 0.0,
+        "y": 1.2
+      }
+    },
+    {
+      "type": "wall",
+      "id": "Wall82",
+      "width": 0.1,
+      "height": 0.3,
+      "color": "ff8080ff",
+      "from": {
+        "x": 0.8,
+        "y": 1.2
+      },
+      "to": {
+        "x": 1.6,
+        "y": 1.2
+      }
+    },
+    {
+      "type": "wall",
+      "id": "Wall83",
+      "width": 0.1,
+      "height": 0.3,
+      "color": "ff8080ff",
+      "from": {
+        "x": 1.6,
+        "y": 0.5
+      },
+      "to": {
+        "x": 1.6,
+        "y": 1.2
+      }
+    },
+    {
+      "type": "wall",
+      "id": "Wall89",
+      "width": 0.1,
+      "height": 0.3,
+      "color": "ff8080ff",
+      "from": {
+        "x": 0.8,
+        "y": 1.2
+      },
+      "to": {
+        "x": 0.8,
+        "y": 2.1
+      }
+    },
+    {
+      "type": "wall",
+      "id": "Wall90",
+      "width": 0.1,
+      "height": 0.3,
+      "color": "ff8080ff",
+      "from": {
+        "x": 0.8,
+        "y": 2.1
+      },
+      "to": {
+        "x": 1.6,
+        "y": 2.1
+      }
+    },
+    {
+      "type": "wall",
+      "id": "Wall97",
+      "width": 0.1,
+      "height": 0.3,
+      "color": "ff8080ff",
+      "from": {
+        "x": 0.0,
+        "y": 2.1
+      },
+      "to": {
+        "x": 0.0,
+        "y": 3.4
+      }
+    },
+    {
+      "type": "wall",
+      "id": "Wall99",
+      "width": 0.1,
+      "height": 0.3,
+      "color": "ff8080ff",
+      "from": {
+        "x": 0.8,
+        "y": 3.4
+      },
+      "to": {
+        "x": 2.3,
+        "y": 3.4
+      }
+    },
+    {
+      "type": "wall",
+      "id": "Wall100",
+      "width": 0.1,
+      "height": 0.3,
+      "color": "ff8080ff",
+      "from": {
+        "x": 2.3,
+        "y": 2.1
+      },
+      "to": {
+        "x": 2.3,
+        "y": 3.4
+      }
+    },
+    {
+      "type": "wall",
+      "id": "Wall101",
+      "width": 0.1,
+      "height": 0.3,
+      "color": "ff8080ff",
+      "from": {
+        "x": 1.6,
+        "y": 2.1
+      },
+      "to": {
+        "x": 2.3,
+        "y": 2.1
+      }
+    },
+    {
+      "type": "wall",
+      "id": "Wall106",
+      "width": 0.1,
+      "height": 0.3,
+      "color": "ff8080ff",
+      "from": {
+        "x": 0.0,
+        "y": 0.0
+      },
+      "to": {
+        "x": 0.0,
+        "y": 0.5
+      }
+    },
+    {
+      "type": "wall",
+      "id": "Wall108",
+      "width": 0.1,
+      "height": 0.3,
+      "color": "ff8080ff",
+      "from": {
+        "x": 0.8,
+        "y": 0.0
+      },
+      "to": {
+        "x": 0.8,
+        "y": 0.5
+      }
+    },
+    {
+      "type": "wall",
+      "id": "Wall109",
+      "width": 0.1,
+      "height": 0.3,
+      "color": "ff8080ff",
+      "from": {
+        "x": 0.0,
+        "y": 0.0
+      },
+      "to": {
+        "x": 0.8,
+        "y": 0.0
+      }
+    },
+    {
+      "type": "wall",
+      "id": "Wall113",
+      "width": 0.1,
+      "height": 0.3,
+      "color": "ff8080ff",
+      "from": {
+        "x": 0.0,
+        "y": 1.2
+      },
+      "to": {
+        "x": 0.0,
+        "y": 2.1
+      }
+    },
+    {
+      "type": "wall",
+      "id": "Wall121",
+      "width": 0.1,
+      "height": 0.3,
+      "color": "ff8080ff",
+      "from": {
+        "x": 0.0,
+        "y": 3.4
+      },
+      "to": {
+        "x": 0.0,
+        "y": 4.9
+      }
+    },
+    {
+      "type": "wall",
+      "id": "Wall122",
+      "width": 0.1,
+      "height": 0.3,
+      "color": "ff8080ff",
+      "from": {
+        "x": 0.0,
+        "y": 4.9
+      },
+      "to": {
+        "x": 0.8,
+        "y": 4.9
+      }
+    },
+    {
+      "type": "wall",
+      "id": "Wall123",
+      "width": 0.1,
+      "height": 0.3,
+      "color": "ff8080ff",
+      "from": {
+        "x": 0.8,
+        "y": 3.4
+      },
+      "to": {
+        "x": 0.8,
+        "y": 4.9
+      }
+    }
+  ],
+  "gates": [],
+  "spaces": [
+    {
+      "type": "space",
+      "id": "Space134",
+      "kind": "room",
+      "name": null,
+      "function": null,
+      "expectedPersonCount": 3,
+      "area": 6.43,
+      "diameter": 4.9648766349225637
+    }
+  ],
+  "nodes": [
+    {
+      "type": "node",
+      "id": "Node135",
+      "kind": "spaceNode",
+      "position": {
+        "x": 0.81842923794712275,
+        "y": 2.4016329704510109
+      }
+    }
+  ],
+  "robots": [
+  {
+      "type": "robot",
+      "id": "panda06",
+      "kind": "robot",
+      "location": {
+        "x": 0.4,
+        "y": 0.7,
+        "z": 1.0,
+        "alpha": 0.0001
+      },
+	  "target":
+	  {
+	  "x": 0.4,
+	  "y": 4.6
+	  }
+    },	
+    {
+      "type": "robot",
+      "id": "panda02",
+      "kind": "robot",
+      "location": {
+        "x": 0.4,
+        "y": 4.6,
+        "z": 1.0,
+        "alpha": 0.0001
+      },
+          "target":
+          {
+          "x": 0.4,
+          "y": 0.7
+          }
+    }
+  
+  ],
+  "victims": [],
+  "space-walls": [
+    {
+      "type": "space-wall",
+      "spaceId": "Space134",
+      "wallId": "Wall121"
+    },
+    {
+      "type": "space-wall",
+      "spaceId": "Space134",
+      "wallId": "Wall122"
+    },
+    {
+      "type": "space-wall",
+      "spaceId": "Space134",
+      "wallId": "Wall123"
+    },
+    {
+      "type": "space-wall",
+      "spaceId": "Space134",
+      "wallId": "Wall90"
+    },
+    {
+      "type": "space-wall",
+      "spaceId": "Space134",
+      "wallId": "Wall97"
+    },
+    {
+      "type": "space-wall",
+      "spaceId": "Space134",
+      "wallId": "Wall99"
+    },
+    {
+      "type": "space-wall",
+      "spaceId": "Space134",
+      "wallId": "Wall100"
+    },
+    {
+      "type": "space-wall",
+      "spaceId": "Space134",
+      "wallId": "Wall101"
+    },
+    {
+      "type": "space-wall",
+      "spaceId": "Space134",
+      "wallId": "Wall113"
+    },
+    {
+      "type": "space-wall",
+      "spaceId": "Space134",
+      "wallId": "Wall89"
+    },
+    {
+      "type": "space-wall",
+      "spaceId": "Space134",
+      "wallId": "Wall78"
+    },
+    {
+      "type": "space-wall",
+      "spaceId": "Space134",
+      "wallId": "Wall80"
+    },
+    {
+      "type": "space-wall",
+      "spaceId": "Space134",
+      "wallId": "Wall82"
+    },
+    {
+      "type": "space-wall",
+      "spaceId": "Space134",
+      "wallId": "Wall83"
+    },
+    {
+      "type": "space-wall",
+      "spaceId": "Space134",
+      "wallId": "Wall106"
+    },
+    {
+      "type": "space-wall",
+      "spaceId": "Space134",
+      "wallId": "Wall108"
+    },
+    {
+      "type": "space-wall",
+      "spaceId": "Space134",
+      "wallId": "Wall109"
+    }
+  ],
+  "space-gates": [],
+  "space-nodes": [
+    {
+      "type": "space-node",
+      "spaceId": "Space134",
+      "nodeId": "Node135"
+    }
+  ],
+  "space-robots": [
+  {
+      "type": "space-robot",
+      "spaceId": "Space134",
+      "robotId": "panda06"
+    },
+    {
+      "type": "space-robot",
+      "spaceId": "Space134",
+      "robotId": "panda02"
+    }
+  ],
+  "space-victims": [],
+  "gate-nodes": [
+  ],
+  "node-nodes": [
+  ]
+}
