@@ -11,6 +11,7 @@ import numpy
 import random
 import atexit
 import json
+import math
 from robot_model import State
 from algorithms.simple import SimpleAlgorithm
 from algorithms.go_and_turn import GoAndTurn
@@ -59,6 +60,7 @@ class Controller:
         self._algorithm.loop()
 
     def send_robot_command(self, robot_command, fear_factor):
+	MAX_SPEED = 0.2
         cmd_msg = client_pb2.CommandMessage()
         cmd_msg.type = client_pb2.CommandMessage.ROBOT_COMMAND
         rc = cmd_msg.robotCommand
@@ -67,6 +69,18 @@ class Controller:
         rc.rearLeft = robot_command.get_rear_left()
         rc.rearRight = robot_command.get_rear_right()
         rc.fearFactor = fear_factor
+
+	if abs(rc.frontLeft) > MAX_SPEED:
+		rc.frontLeft = math.copysign(MAX_SPEED,rc.frontLeft)
+			
+	if abs(rc.frontRight) > MAX_SPEED:
+		rc.frontRight = math.copysign(MAX_SPEED,rc.frontRight)
+		
+	if abs(rc.rearLeft) > MAX_SPEED:
+		rc.rearLeft = math.copysign(MAX_SPEED,rc.rearLeft)
+		
+	if abs(rc.rearRight) > MAX_SPEED:
+		rc.rearRight = math.copysign(MAX_SPEED,rc.rearRight)
 
         if self._logger.isEnabledFor('DEBUG'):
             self._logger.debug("Sending RobotCommand, fl=%f, fr=%f, rl=%f, rr=%f"

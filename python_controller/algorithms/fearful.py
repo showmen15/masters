@@ -12,7 +12,7 @@ from utils.maze_util import MazeUtil
 from operator import itemgetter
 
 class FearfulAlgorithm(AbstractAlgorithm):
-    CRUISE_SPEED = 0.3
+    CRUISE_SPEED = 0.1
     ANGLE_MEASURE_STEPS = 5
     CIRCLES_RADIUS = 0.5
     VARIANTS_MAX_TIME = 0.015
@@ -328,8 +328,8 @@ class FearfulAlgorithm(AbstractAlgorithm):
         if abs(omega) > 0.5:
             v = 0.0
 
-        if abs(v) > (2 * CRUISE_SPEED):
-	    v = math.copysign(CRUISE_SPEED,v)
+        if abs(v) > FearfulAlgorithm.CRUISE_SPEED:
+	    v = math.copysign(FearfulAlgorithm.CRUISE_SPEED,v)
         
         return v, omega
 
