@@ -18,7 +18,7 @@ from kalman.angle_kalman import AngleKalman
 class AbstractAlgorithm(object):
     SAVE_STATES = False
 
-    INTERVAL = 0.25  # s
+    INTERVAL = 0.3  # s
     MEASURE_STEPS = 50 * 5  # 5s
     AVG_TIMES_NUM = 10
 
