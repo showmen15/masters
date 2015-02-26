@@ -1,0 +1,9 @@
+sudo apt-get install python-numpy
+sudo apt-get install python-enum
+sudo pip install scipy
+sudo pip install --upgrade setuptools
+sudo pip install scipy
+sudo easy_install pykalman
+sudo apt-get install liblapack-dev
+sudo easy_install numpy scipy Sphinx numpydoc nose pykalman
+sudo apt-get install python-qt4
