@@ -1,0 +1,6 @@
+sudo apt-get install erlang
+sudo apt-get install python-enum34
+sudo apt-get install python-minimal
+sudo apt-get install gnuradio
+sudo pip install pymongo
+sudo pip install pyzmq
