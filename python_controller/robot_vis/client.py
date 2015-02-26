@@ -9,11 +9,12 @@ class RobotVisClient(QUdpSocket):
 
     def __init__(self, hostname, port):
         super(RobotVisClient, self).__init__()
-
+	
         self._hostname = QHostAddress(hostname)
         self._port = port
 
         self._logger = logging.getLogger("vis_client")
+	self._logger.debug("hostname: %s" %(hostname))
 
     def send_update(self, vis_update):
         if self._logger.isEnabledFor('DEBUG'):
