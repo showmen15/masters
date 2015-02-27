@@ -1,5 +1,5 @@
 {
-  "name": "testSzsz",
+  "name": "MazeRoboLabFullMapMichal",
   "timeout": 60,
   "walls": [
     {
@@ -163,20 +163,53 @@
     }
   ],
   "robots": [
+   {
+      "type": "robot",
+      "id": "panda04",
+      "kind": "robot",
+      "location": {
+        "x": 1.0,
+        "y": 0.8,
+        "z": 1.0,
+        "alpha": 0.0001
+      },
+	  "target":
+	  {
+	  "x": 1.0,
+	  "y": 4.0
+	  }
+    },
+	{
+      "type": "robot",
+      "id": "panda06",
+      "kind": "robot",
+      "location": {
+        "x": 1.5,
+        "y": 0.8,
+        "z": 1.0,
+        "alpha": 0.0001
+      },
+	  "target":
+	  {
+	  "x": 1.5,
+	  "y": 4.0
+	  }
+    },	
     {
       "type": "robot",
-      "id": "Robot8",
-      "kind": "RobotCar",
+      "id": "panda02",
+      "kind": "robot",
       "location": {
-        "x": 1.2739,
-        "y": 0.5743,
+        "x": 1.3,
+        "y": 4.0,
         "z": 1.0,
-        "alpha": 1.68
+        "alpha": 0.0001
       },
-	  "target": {
-        "x": 1.24,
-        "y": 4.28
-      }
+          "target":
+          {
+          "x": 1.3,
+          "y": 0.8
+          }
     }
   ],
   "victims": [],
@@ -236,10 +269,20 @@
     }
   ],
   "space-robots": [
+     {
+      "type": "space-robot",
+      "spaceId": "Space192",
+      "robotId": "panda04"
+    },
+	{
+      "type": "space-robot",
+      "spaceId": "Space192",
+      "robotId": "panda06"
+    },
     {
       "type": "space-robot",
       "spaceId": "Space192",
-      "robotId": "Robot8"
+      "robotId": "panda02"
     }
   ],
   "space-victims": [],
