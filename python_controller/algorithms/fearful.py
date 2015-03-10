@@ -325,7 +325,7 @@ class FearfulAlgorithm(AbstractAlgorithm):
         omega = -10.0 * p * 2.0
         omega = math.copysign(min(abs(omega), 5.0), omega)
 
-        if abs(omega) > 0.5:
+        if abs(omega) > math.pi:
             v = 0.0
 
         #if abs(v) > FearfulAlgorithm.CRUISE_SPEED:
