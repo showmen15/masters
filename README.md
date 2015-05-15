@@ -67,7 +67,11 @@ python server.py ../../models/3vs1.roson
 ```
 
 2 . Uruchom program [logview](https://pythonhosted.org/logview/) 
-
+```
+logview
+lub
+python logview.py
+```
 3 . Uruchom klienta 
 ```
 cd robot_controller
