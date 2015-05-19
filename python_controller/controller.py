@@ -60,7 +60,7 @@ class Controller:
         self._algorithm.loop()
 
     def send_robot_command(self, robot_command, fear_factor):
-	MAX_SPEED = 0.2
+	MAX_SPEED = 7.0
         cmd_msg = client_pb2.CommandMessage()
         cmd_msg.type = client_pb2.CommandMessage.ROBOT_COMMAND
         rc = cmd_msg.robotCommand
