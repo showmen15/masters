@@ -171,6 +171,8 @@ class AbstractAlgorithm(object):
             timestamp = new_state.get_timestamp()
             fear_factor = new_state.get_fear_factor()
 
+	    self._logger.debug("org_theta: %f" % (org_theta))
+
             if robot_name not in self._states:
                 location_kalman = LocationKalman(org_x, org_y, self.INTERVAL)
                 angle_kalman = AngleKalman(org_theta, self.INTERVAL)
@@ -186,7 +188,8 @@ class AbstractAlgorithm(object):
                          'theta': org_theta,
                          'omega': 0.0,
                          'epsilon': 0.0,
-                         'fear_factor': fear_factor}
+                         'fear_factor': fear_factor,
+			 'org_theta': org_theta}
 
                 self._states[robot_name] = state
 
@@ -220,6 +223,7 @@ class AbstractAlgorithm(object):
             state['epsilon'] = epsilon
             state['timestamp'] = timestamp
             state['fear_factor'] = fear_factor
+	    state['org_theta'] = org_theta
 
             if self._f is not None and robot_name == self._robot_name:
                 self._f.write("%i %f %f %f %f %f %f %f %f\n" %

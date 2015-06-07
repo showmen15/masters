@@ -25,3 +25,11 @@ class MeasurementUtils:
             angle -= math.copysign(2.0 * math.pi, angle)
 
         return angle
+
+    @staticmethod
+    def normalize_min_max(x,min,max):
+        new_min = -1
+        new_max = 1
+
+        result = (((x - min) * (new_max - new_min))/ (max - min)) + new_min
+        return result
