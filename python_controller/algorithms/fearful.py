@@ -179,7 +179,7 @@ class FearfulAlgorithm(AbstractAlgorithm):
             self._space_id = space_id
 
         # ominiecie robota lub robotow
-        if self._avoid_close_objects(x, y, Otheta):
+        if self._avoid_close_objects(x, y, theta,Otheta):
             return
 
         target = self._target[0]
@@ -197,6 +197,7 @@ class FearfulAlgorithm(AbstractAlgorithm):
         if not self._find_intersections(preds, self.CIRCLES_RADIUS * 1.5, 0):
             self._own_fear_factor = self._base_fear_factor
 
+	    self._logger.info("find intersectio")
 	    Vl, Vr = FearfulAlgorithm._get_wheel_speeds_new2(self._logger,v,Otheta,bearingNew,False,target_dist)
 	    self._send_robot_command(RobotCommand(Vl, Vr, Vl, Vr))
             
@@ -279,6 +280,7 @@ class FearfulAlgorithm(AbstractAlgorithm):
                 self._last_params = best_v, best_bearing, best_midpoint
 
         if best_preds is None:
+	    self._logger.info("best pred is None -->>>>> Stop command:")
             self._send_stop_command()
             return
         else:
@@ -302,9 +304,9 @@ class FearfulAlgorithm(AbstractAlgorithm):
 	    Vl, Vr = FearfulAlgorithm._get_wheel_speeds_new2(self._logger,v,Otheta,best_bearing,False,target_dist)
             self._send_robot_command(RobotCommand(Vl, Vr, Vl, Vr))
 
-    def _avoid_close_objects(self, x, y, theta):
+    def _avoid_close_objects(self, x, y, theta,Otheta):
 
-        self._logger.info("insert sction _avoid_close_objects");
+        #self._logger.info("insert sction _avoid_close_objects");
 	distances = self._distances_to_robots()
 
         new_yield_timestamps = {}
@@ -342,6 +344,7 @@ class FearfulAlgorithm(AbstractAlgorithm):
                 bearing_to_robot = MeasurementUtils.angle(x, y, rx, ry)
                 #bearings.add(bearing_to_robot)
             else:
+		self._logger.debug("Avoid Close Object ->>>> stop robot")
                 self._send_stop_command()
                 return True
 
@@ -376,7 +379,7 @@ class FearfulAlgorithm(AbstractAlgorithm):
        	    #Vl, Vr = FearfulAlgorithm._get_wheel_speeds_new2(v,theta,best_bearing,True,None,None,None)
             
 	    self._logger.debug("Avoid Close Object")
-	    Vl, Vr = FearfulAlgorithm._get_wheel_speeds_new2(self._logger,v,theta,best_bearing,True,None)
+	    Vl, Vr = FearfulAlgorithm._get_wheel_speeds_new2(self._logger,v,Otheta,best_bearing,True,None)
        	    self._send_robot_command(RobotCommand(Vl, Vr, Vl, Vr))
 
         return True
