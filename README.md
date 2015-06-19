@@ -123,5 +123,9 @@ python server.py ../../models/3vs1.roson
 
 ```
 cd robot_controller
+./start_amber_client.sh MazeRoboLabFullMapMichal
+
 ./start_amber_client.sh 3vs1
+
+
 ```
