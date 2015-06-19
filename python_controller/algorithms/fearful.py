@@ -20,6 +20,10 @@ class FearfulAlgorithm(AbstractAlgorithm):
     YIELD_DELAY = 3 * 1000 * 1000
     RUNAWAY_TIME = 10000.0 * 1000 * 1000
 
+    MaxRotateInPlace = 0.2
+    DISTANCE_GOAL = 0.2
+    
+
     def __init__(self, controller, robot_name, roson):
         super(FearfulAlgorithm, self).__init__(controller, robot_name)
         self._logger.info("Simple algorithm started")
@@ -89,14 +93,62 @@ class FearfulAlgorithm(AbstractAlgorithm):
     def _modify_vis_state(self, vis_state):
         vis_state.set_fear_factors(self._fear_factors)
 
+    def _navigate2(self, avail_time):
+        dist = None
+
+	x = self._own_robot['x']
+        y = self._own_robot['y']
+        theta = self._own_robot['theta']
+        Otheta = self._own_robot['org_theta']
+        Otheta = 1.57 - Otheta;
+	v = FearfulAlgorithm.CRUISE_SPEED        
+ 
+	if self._target is None:
+            tx, ty = self._controller.get_new_target()
+            self._target = self._maze_util.find_path((x, y), (tx, ty))
+
+        target1 = self._target[0]
+        tx, ty = target1
+
+	bearing = math.atan2(ty - y, tx - x)
+	target_dist = MeasurementUtils.distance(x, y, tx, ty)
+	
+	Vl, Vr = FearfulAlgorithm._get_wheel_speeds_new2(self._logger,v,Otheta,bearing,False,target_dist)	
+	#self._send_robot_command(RobotCommand(Vl, Vr, Vl, Vr))
+	
+	#if bearing < 0:
+	#   bearing = bearing * (-1)
+
+	#target_dist = MeasurementUtils.distance(x, y, tx, ty)	
+	#Vl = 0.0
+	#Vr = 0.0 
+
+	#self._logger.info('ORG THETA: %f' % ( Otheta))
+
+	#self._logger.info("FindIntersction1 Vl: %f; Vr: %f; v: %f; theta: %f; bearing: %f; target_distance: %f; sub: %f" % (Vl, Vr, v, Otheta, bearing, target_dist, Otheta - bearing))
+        #Vl, Vr = FearfulAlgorithm._get_wheel_speeds_new2(v,theta,bearing,False,target_dist)
+
+	#if Otheta < -3.14:
+	#   Otheta = Otheta +  6.28
+	#elif Otheta > 3.14:
+	#   Otheta = Otheta - 6.28	   
+
+        #self._logger.info("FindIntersction2 Vl: %f; Vr: %f; v: %f; theta: %f; bearing: %f; target_distance: %f; sub: %f" % (Vl, Vr, v, Otheta, bearing, target_dist,  Otheta + bearing ))
+        #self._logger.info("Test!!!!")
+        #self._send_robot_command(RobotCommand(Vl, Vr, Vl, Vr))	
+
+        return
+
     def _navigate(self, avail_time):
         dist = None
+
+	#self._logger.info("Nowy kod")
 
         x = self._own_robot['x']
         y = self._own_robot['y']
         theta = self._own_robot['theta']
-	Otheta = self._own_robot['org_theta']
-	self._logger.info('ORG THETA: %f' % (Otheta))	
+	Otheta = self._own_robot['org_theta']	
+	Otheta = 1.57 - Otheta
 
         v = FearfulAlgorithm.CRUISE_SPEED
 
@@ -104,7 +156,7 @@ class FearfulAlgorithm(AbstractAlgorithm):
             tx, ty = self._controller.get_new_target()
             self._target = self._maze_util.find_path((x, y), (tx, ty))
 
-        if not self._target_reached and self._target_distance() < 0.1:
+        if not self._target_reached and self._target_distance() < FearfulAlgorithm.DISTANCE_GOAL:
 
             if len(self._target) > 1:
                 self._target.pop(0)
@@ -127,12 +179,13 @@ class FearfulAlgorithm(AbstractAlgorithm):
             self._space_id = space_id
 
         # ominiecie robota lub robotow
-        if self._avoid_close_objects(x, y, theta):
+        if self._avoid_close_objects(x, y, Otheta):
             return
 
         target = self._target[0]
         tx, ty = target
         bearing = MeasurementUtils.angle(x, y, tx, ty)
+	bearingNew = math.atan2(ty - y, tx - x) #tylko dla nawigacji
 
         preds = PredictionUtils.predict_positions(x, y, v, bearing, 0.0)
         preds = FearfulAlgorithm._cut_predictions(preds, target)
@@ -144,7 +197,10 @@ class FearfulAlgorithm(AbstractAlgorithm):
         if not self._find_intersections(preds, self.CIRCLES_RADIUS * 1.5, 0):
             self._own_fear_factor = self._base_fear_factor
 
-            #v, omega = FearfulAlgorithm._navigate_fun(v, theta, bearing, False)
+	    Vl, Vr = FearfulAlgorithm._get_wheel_speeds_new2(self._logger,v,Otheta,bearingNew,False,target_dist)
+	    self._send_robot_command(RobotCommand(Vl, Vr, Vl, Vr))
+            
+	    #v, omega = FearfulAlgorithm._navigate_fun(v, theta, bearing, False)
 
             #if target_dist < 0.2:
             #    v *= target_dist
@@ -154,10 +210,10 @@ class FearfulAlgorithm(AbstractAlgorithm):
 
             ##Vl, Vr = FearfulAlgorithm._get_wheel_speeds(v, omega)
 
-            Vl, Vr = FearfulAlgorithm._get_wheel_speeds_new2(v,theta,bearing,False,target_dist)
-	    self._logger.info("FindIntersction Vl: %f; Vr: %f; v: %f; theta: %f; bearing: %f; target_distance: %f; sub: %f" % (Vl, Vr, v, theta, bearing, target_dist, Otheta - bearing))
+            #Vl, Vr = FearfulAlgorithm._get_wheel_speeds_new2(v,Otheta,bearing,False,target_dist,tx - x,ty - y)
+	    #self._logger.info("FindIntersction Vl: %f; Vr: %f; v: %f; theta: %f; bearing: %f; target_distance: %f; sub: %f,x: %f, y: %f" % (Vl, Vr, v, Otheta, bearing, target_dist, Otheta - bearing,x,y))
 
-            self._send_robot_command(RobotCommand(Vl, Vr, Vl, Vr))
+            #self._send_robot_command(RobotCommand(Vl, Vr, Vl, Vr))
 
             return
 
@@ -239,9 +295,11 @@ class FearfulAlgorithm(AbstractAlgorithm):
 
             #Vl, Vr = FearfulAlgorithm._get_wheel_speeds(best_v, omega)
 
-            Vl, Vr = FearfulAlgorithm._get_wheel_speeds_new2(v,theta,best_bearing,False,target_dist)
-            self._logger.info("Prediction Vl: %f; Vr: %f; v: %f; theta: %f; best_bearing: %f; target_distance: %f; sub: %f" % (Vl, Vr, v, theta, best_bearing, target_dist,Otheta - best_bearing))
-
+            ##Vl, Vr = FearfulAlgorithm._get_wheel_speeds_new2(v,Otheta,best_bearing,False,target_dist, mp_x - x, mp_y - y)	   
+            ##self._logger.info("Prediction Vl: %f; Vr: %f; v: %f; theta: %f; best_bearing: %f; target_distance: %f; sub: %f,x: %f,y: %f" % (Vl, Vr, v, Otheta, best_bearing, target_dist,Otheta - best_bearing,x,y))
+	    
+	    self._logger.info("Prediction:")
+	    Vl, Vr = FearfulAlgorithm._get_wheel_speeds_new2(self._logger,v,Otheta,best_bearing,False,target_dist)
             self._send_robot_command(RobotCommand(Vl, Vr, Vl, Vr))
 
     def _avoid_close_objects(self, x, y, theta):
@@ -313,10 +371,10 @@ class FearfulAlgorithm(AbstractAlgorithm):
             self._predictions[self._robot_name] = preds
 
             #Vl, Vr = FearfulAlgorithm._get_wheel_speeds(v, omega)
-
-       	    Vl, Vr = FearfulAlgorithm._get_wheel_speeds_new2(v,theta,best_bearing,True,None)
-            self._logger.debug("Avoid Close Object Vl: %f; Vr: %f; v: %f; theta: %f; best_bearing: %f; target_distance: None;" % (Vl, Vr, v, theta, best_bearing))
-
+       	    #Vl, Vr = FearfulAlgorithm._get_wheel_speeds_new2(v,theta,best_bearing,True,None,None,None)
+            
+	    self._logger.debug("Avoid Close Object")
+	    Vl, Vr = FearfulAlgorithm._get_wheel_speeds_new2(self._logger,v,theta,best_bearing,True,None)
        	    self._send_robot_command(RobotCommand(Vl, Vr, Vl, Vr))
 
         return True
@@ -351,30 +409,45 @@ class FearfulAlgorithm(AbstractAlgorithm):
         return Vl, Vr
 
     @staticmethod
-    def _get_wheel_speeds_new2(v, theta, target_theta, with_reverse,target_distance):    
+    def _get_wheel_speeds_new2(_logger,v, theta, target_theta, with_reverse,target_distance):   
 	
-	if  (target_distance is not None) and (target_distance < 0.2):
+	_logger.info("_get_wheel_speeds_new2: theta: %f; target_theta: %f;" % (theta, target_theta ))
+
+	if  (target_distance is not None) and (target_distance < 0.25):
             Vl = 0
             Vr = 0
 	else:
-        	location_angle = FearfulAlgorithm.normalize_angle3(theta) 
-		drive_angle = target_theta - location_angle
-		
+        	theta = FearfulAlgorithm.normalize_angle3(theta)
+
+		drive_angle = target_theta - theta
+		drive_angle = FearfulAlgorithm.normalize_angle3(drive_angle)
+		drive_angle = -drive_angle
+			
 		if abs(drive_angle) < math.pi / 18:  # 10st
 			# drive normal
 			Vl = v
 			Vr = v
 		elif abs(drive_angle) > math.pi / 3:  # 60st
 			# rotate in place
-			Vl = -v
-			Vr = v
-           		if drive_angle < 0:
-				Vl, Vr = Vr, Vl
+			#Vl = -v
+			#Vr = v
+			if v > FearfulAlgorithm.MaxRotateInPlace:
+			   Vl = -FearfulAlgorithm.MaxRotateInPlace
+			   Vr = FearfulAlgorithm.MaxRotateInPlace
+			else:
+			   Vl = -v 
+			   Vr = v 
+           		
+			if drive_angle < 0:
+			   Vl, Vr = Vr, Vl
 		else:
                		# drive on turn
                		Vl = v  - FearfulAlgorithm.compute_change(drive_angle,v)
                		Vr = v  + FearfulAlgorithm.compute_change(drive_angle,v)
-		
+	
+		_logger.info("_get_wheel_speeds_new2: theta: %f; target_theta: %f; drive_angle: %f" % (theta, target_theta, drive_angle ))
+	
+	#_logger.info("FindIntersction2 v: %f; theta: %f; target_distance: %f; sub: %f" % (v, theta, target_theta, target_distance )	
 	return Vl,Vr
 
     @staticmethod
@@ -383,6 +456,12 @@ class FearfulAlgorithm(AbstractAlgorithm):
             angle += 2 * math.pi
         elif angle > math.pi:
             angle -= 2 * math.pi
+        return angle
+    
+    @staticmethod
+    def normalize_angle4(angle):
+        while abs(angle) > 2 * math.pi:
+            angle -= math.copysign(2.0 * math.pi, angle)
         return angle
 
     @staticmethod
