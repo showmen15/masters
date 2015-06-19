@@ -14,7 +14,7 @@ from operator import itemgetter
 class FearfulAlgorithm(AbstractAlgorithm):
     CRUISE_SPEED = 0.2
     ANGLE_MEASURE_STEPS = 5
-    CIRCLES_RADIUS = 0.5
+    CIRCLES_RADIUS = 0.2
     VARIANTS_MAX_TIME = 0.015
     FF_RADIUS = 2.0
     YIELD_DELAY = 3 * 1000 * 1000
@@ -303,7 +303,9 @@ class FearfulAlgorithm(AbstractAlgorithm):
             self._send_robot_command(RobotCommand(Vl, Vr, Vl, Vr))
 
     def _avoid_close_objects(self, x, y, theta):
-        distances = self._distances_to_robots()
+
+        self._logger.info("insert sction _avoid_close_objects");
+	distances = self._distances_to_robots()
 
         new_yield_timestamps = {}
 
