@@ -429,13 +429,15 @@ class FearfulAlgorithm(AbstractAlgorithm):
 		drive_angle = -drive_angle
 			
 		if abs(drive_angle) < math.pi / 18:  # 10st
+			_logger.info("Full Speed 10 stopni")
 			# drive normal
 			Vl = v
 			Vr = v
-		elif abs(drive_angle) > math.pi / 3:  # 60st
+		elif abs(drive_angle) > math.pi / 6:  # 30st
 			# rotate in place
 			#Vl = -v
 			#Vr = v
+			_logger.info("Full Speed 30 stopni")
 			if v > FearfulAlgorithm.MaxRotateInPlace:
 			   Vl = -FearfulAlgorithm.MaxRotateInPlace
 			   Vr = FearfulAlgorithm.MaxRotateInPlace
@@ -447,6 +449,7 @@ class FearfulAlgorithm(AbstractAlgorithm):
 			   Vl, Vr = Vr, Vl
 		else:
                		# drive on turn
+			_logger.info("drive and turn")
                		Vl = v  - FearfulAlgorithm.compute_change(drive_angle,v)
                		Vr = v  + FearfulAlgorithm.compute_change(drive_angle,v)
 	
