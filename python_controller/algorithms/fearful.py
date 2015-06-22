@@ -12,7 +12,7 @@ from utils.maze_util import MazeUtil
 from operator import itemgetter
 
 class FearfulAlgorithm(AbstractAlgorithm):
-    CRUISE_SPEED = 0.1
+    CRUISE_SPEED = 0.2
     ANGLE_MEASURE_STEPS = 5
     CIRCLES_RADIUS = 0.6
     VARIANTS_MAX_TIME = 0.015
@@ -20,7 +20,7 @@ class FearfulAlgorithm(AbstractAlgorithm):
     YIELD_DELAY = 3 * 1000 * 1000
     RUNAWAY_TIME = 10000.0 * 1000 * 1000
 
-    MaxRotateInPlace = 0.2
+    MaxRotateInPlace = 0.4
     DISTANCE_GOAL = 0.2
     
 
