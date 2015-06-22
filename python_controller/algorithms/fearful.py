@@ -14,7 +14,7 @@ from operator import itemgetter
 class FearfulAlgorithm(AbstractAlgorithm):
     CRUISE_SPEED = 0.2
     ANGLE_MEASURE_STEPS = 5
-    CIRCLES_RADIUS = 0.6
+    CIRCLES_RADIUS = 0.5
     VARIANTS_MAX_TIME = 0.015
     FF_RADIUS = 2.0
     YIELD_DELAY = 3 * 1000 * 1000
